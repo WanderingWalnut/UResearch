@@ -1,0 +1,2 @@
+UResearch is a platform that helps university students find and manage research outreach opportunities in one place. Students can discover professors based on departments, research interests, and semantic fit, save potential matches, create personalized email templates, send outreach campaigns, and track replies or follow-ups through a simple workflow. The goal is to make research outreach more organized, less repetitive, and easier for students trying to connect with professors.
+
