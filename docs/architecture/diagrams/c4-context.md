@@ -3,25 +3,38 @@
 Shows UResearch in its environment: who uses it and which external systems it integrates with.
 
 ```mermaid
-C4Context
-  title System Context — UResearch (Phase 1 Launch)
+%%{init: {"theme": "base", "themeVariables": {"background": "#f8fafc", "mainBkg": "#dbeafe", "primaryTextColor": "#0f172a", "lineColor": "#475569", "textColor": "#0f172a", "edgeLabelBackground": "#ffffff", "clusterBkg": "#ffffff", "clusterBorder": "#94a3b8", "fontFamily": "Inter, ui-sans-serif, system-ui, sans-serif"}} }%%
+flowchart LR
+  subgraph users["People"]
+    direction TB
+    student["<b>Student</b><br/>UCalgary student seeking research outreach"];
+    professor["<b>Professor</b><br/>Receives outreach in university mailbox"];
+  end
 
-  Person(student, "Student", "UCalgary student seeking research outreach")
-  Person(professor, "Professor", "Receives outreach in university mailbox")
+  uresearch["<b>UResearch</b><br/>Discover professors, run outreach campaigns,<br/>track threads and replies"];
 
-  System(uresearch, "UResearch", "Discover professors, run outreach campaigns, track threads and replies")
+  subgraph external["External Systems"]
+    direction TB
+    microsoft["<b>Microsoft 365 / Azure AD</b><br/>OAuth sign-in and student mailbox via Graph"];
+    exchange["<b>Exchange Online</b><br/>Delivers email to professor inboxes"];
+    ucalgary_data["<b>UCalgary Profile Sources</b><br/>Professor directory pages/APIs for ingestion"];
+  end
 
-  System_Ext(microsoft, "Microsoft 365 / Azure AD", "OAuth sign-in and student mailbox via Graph")
-  System_Ext(exchange, "Exchange Online", "Delivers email to professor inboxes")
-  System_Ext(ucalgary_data, "UCalgary Profile Sources", "Professor directory pages/APIs for ingestion")
+  student -->|"discover / campaign / inbox"| uresearch;
+  student -->|"sign in + consent"| microsoft;
+  uresearch -->|"send mail / sync replies"| microsoft;
+  microsoft -->|"route mail"| exchange;
+  professor -->|"read + reply"| exchange;
+  uresearch -->|"ingest profiles"| ucalgary_data;
+  professor -->|"tracking pixel request"| uresearch;
 
-  Rel(student, uresearch, "Searches, saves professors, creates campaigns, reads inbox")
-  Rel(student, microsoft, "Signs in, grants mailbox consent")
-  Rel(uresearch, microsoft, "Send mail, sync replies, refresh tokens")
-  Rel(microsoft, exchange, "Routes outbound/inbound mail")
-  Rel(professor, exchange, "Reads and replies to email")
-  Rel(uresearch, ucalgary_data, "Ingests professor profiles", "Batch jobs")
-  Rel(professor, uresearch, "Loads tracking pixel when mail client requests images", "Optional HTTP GET")
+  classDef personNode fill:#f8fafc,stroke:#94a3b8,color:#0f172a,stroke-width:1px;
+  classDef systemNode fill:#bfdbfe,stroke:#60a5fa,color:#0f172a,stroke-width:1px;
+  classDef externalNode fill:#e2e8f0,stroke:#94a3b8,color:#0f172a,stroke-width:1px;
+  class student,professor personNode;
+  class uresearch systemNode;
+  class microsoft,exchange,ucalgary_data externalNode;
+  linkStyle default stroke:#475569,stroke-width:1.5px,color:#0f172a;
 ```
 
 ## Data flows (summary)

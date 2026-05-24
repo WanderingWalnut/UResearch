@@ -7,39 +7,56 @@ Lightweight blueprint for module boundaries inside the **App Server** and **Back
 Route handlers and server actions stay thin; domain logic lives in modules.
 
 ```mermaid
-C4Component
-  title Component Diagram — App Server (Next.js)
+%%{init: {"theme": "base", "themeVariables": {"background": "#f8fafc", "mainBkg": "#dbeafe", "primaryTextColor": "#0f172a", "lineColor": "#475569", "textColor": "#0f172a", "edgeLabelBackground": "#ffffff", "clusterBkg": "#ffffff", "clusterBorder": "#94a3b8", "fontFamily": "Inter, ui-sans-serif, system-ui, sans-serif"}} }%%
+flowchart LR
+  web["<b>Web App</b><br/>Next.js client<br/>Discovery, campaigns, templates, inbox UI"]
 
-  Container(web, "Web App", "Next.js client", "Discovery, campaigns, templates, inbox UI")
-  ContainerDb(db, "Database", "Supabase Postgres", "RLS-protected domain data")
-  Container(queue, "Job Queue", "Supabase Queues", "Async work")
-  Container(auth, "Auth", "Supabase Auth + Azure OAuth", "Sessions")
-  System_Ext(graph, "Microsoft Graph", "Mail API")
+  subgraph app["App Server"]
+    direction TB
+    identity["<b>IdentityModule</b><br/>TypeScript<br/>Sign-in callback, allowlist, mailbox, Vault token store"]
+    discovery["<b>DiscoveryModule</b><br/>TypeScript<br/>Hybrid search, Saved Professor CRUD"]
+    campaigns["<b>CampaignModule</b><br/>TypeScript<br/>Templates, drafts, personalization, enqueue sends"]
+    inbox["<b>InboxModule</b><br/>TypeScript<br/>Thread list/detail, status chips, follow-up reminders"]
+    mailbox["<b>MailboxModule</b><br/>TypeScript<br/>Graph helpers, token refresh, webhook validation"]
+  end
 
-  Container_Boundary(app, "App Server") {
-    Component(identity, "IdentityModule", "TypeScript", "Sign-in callback, domain allowlist, Student + StudentMailbox, Vault token store, starter templates")
-    Component(discovery, "DiscoveryModule", "TypeScript", "Hybrid search, Saved Professor CRUD")
-    Component(campaigns, "CampaignModule", "TypeScript", "Templates, campaign draft/approve, personalization, enqueue sends")
-    Component(inbox, "InboxModule", "TypeScript", "Outreach Thread list/detail, status chips, manual follow-up reminders")
-    Component(mailbox, "MailboxModule", "TypeScript", "Graph client helpers, OAuth token refresh, webhook validation")
-  }
+  subgraph data["Data + Async"]
+    direction TB
+    db[("<b>Database</b><br/>Supabase Postgres<br/>RLS-protected domain data")]
+    queue["<b>Job Queue</b><br/>Supabase Queues<br/>Async work"]
+  end
 
-  Rel(web, identity, "Sign in, session")
-  Rel(web, discovery, "Search, save")
-  Rel(web, campaigns, "Create, preview, approve")
-  Rel(web, inbox, "Threads, replies")
+  subgraph integrations["External Integrations"]
+    direction TB
+    auth["<b>Auth</b><br/>Supabase Auth + Azure OAuth<br/>Sessions"]
+    ms_graph["<b>Microsoft Graph</b><br/>External system<br/>Mail API"]
+  end
 
-  Rel(identity, auth, "OAuth session")
-  Rel(identity, db, "students, student_mailboxes, message_templates")
-  Rel(discovery, db, "professor_profiles, saved_professors")
-  Rel(campaigns, db, "outreach_campaigns, campaign_messages")
-  Rel(campaigns, discovery, "Read professor profiles")
-  Rel(campaigns, queue, "Enqueue send jobs")
-  Rel(inbox, db, "outreach_threads, thread_messages, message_events")
-  Rel(inbox, campaigns, "Read campaign context")
+  web -->|"sign in"| identity
+  web -->|"search / save"| discovery
+  web -->|"create / approve"| campaigns
+  web -->|"threads / replies"| inbox
 
-  Rel(mailbox, graph, "Token-backed API calls")
-  Rel(identity, mailbox, "Store refresh token ref")
+  identity -->|"OAuth session"| auth
+  identity -->|"student + mailbox rows"| db
+  identity -->|"refresh-token ref"| mailbox
+  discovery -->|"professor profiles"| db
+  campaigns -->|"campaign rows"| db
+  campaigns -->|"read profiles"| discovery
+  campaigns -->|"send jobs"| queue
+  inbox -->|"thread rows"| db
+  inbox -->|"campaign context"| campaigns
+  mailbox -->|"token-backed calls"| ms_graph
+
+  classDef clientNode fill:#f8fafc,stroke:#94a3b8,color:#0f172a,stroke-width:1px
+  classDef appNode fill:#bfdbfe,stroke:#60a5fa,color:#0f172a,stroke-width:1px
+  classDef external fill:#e2e8f0,stroke:#94a3b8,color:#0f172a,stroke-width:1px
+  classDef dataNode fill:#d1fae5,stroke:#34d399,color:#064e3b,stroke-width:1px
+  class web clientNode
+  class identity,discovery,campaigns,inbox,mailbox appNode
+  class auth,ms_graph external
+  class db,queue dataNode
+  linkStyle default stroke:#475569,stroke-width:1.5px,color:#0f172a
 ```
 
 ## Background Workers (Supabase Edge Functions)
@@ -47,33 +64,52 @@ C4Component
 Workers import shared logic from the same modules where possible; queue consumers stay thin.
 
 ```mermaid
-C4Component
-  title Component Diagram — Background Workers
+%%{init: {"theme": "base", "themeVariables": {"background": "#f8fafc", "mainBkg": "#dbeafe", "primaryTextColor": "#0f172a", "lineColor": "#475569", "textColor": "#0f172a", "edgeLabelBackground": "#ffffff", "clusterBkg": "#ffffff", "clusterBorder": "#94a3b8", "fontFamily": "Inter, ui-sans-serif, system-ui, sans-serif"}} }%%
+flowchart LR
+  runtime["<b>Worker runtime</b><br/>Supabase Edge Functions<br/>Queue consumers"]
+  queue["<b>Job Queue</b><br/>Supabase Queues"]
 
-  Container(workers, "Worker runtime", "Supabase Edge Functions", "Queue consumers")
-  Container(queue, "Job Queue", "Supabase Queues", "")
-  ContainerDb(db, "Database", "Supabase Postgres", "Service role writes")
-  System_Ext(graph, "Microsoft Graph", "")
-  System_Ext(profiles, "profiles.ucalgary.ca", "Ingestion source")
+  subgraph workers["Workers"]
+    direction TB
+    dispatch_worker["<b>CampaignDispatchWorker</b><br/>Edge Function<br/>scheduled_for due -> enqueue sends"]
+    send_worker["<b>CampaignSendWorker</b><br/>Edge Function<br/>Graph sendMail, update message + thread"]
+    ingest_worker["<b>ProfileIngestWorker</b><br/>Edge Function<br/>Crawl profiles, embeddings, FTS index"]
+    reply_worker["<b>ReplySyncWorker</b><br/>Edge Function<br/>Three-tier match, thread message + reply_detected"]
+    renew_worker["<b>SubscriptionRenewWorker</b><br/>Edge Function<br/>Renew Graph inbox subscriptions"]
+  end
 
-  Container_Boundary(w, "Workers") {
-    Component(send_worker, "CampaignSendWorker", "Edge Function", "Graph sendMail, update Campaign Message + Thread")
-    Component(ingest_worker, "ProfileIngestWorker", "Edge Function", "Crawl UCalgary Profiles, embeddings, FTS index")
-    Component(reply_worker, "ReplySyncWorker", "Edge Function", "Three-tier match, Thread Message + reply_detected")
-    Component(renew_worker, "SubscriptionRenewWorker", "Edge Function", "Renew Graph inbox subscriptions")
-    Component(dispatch_worker, "CampaignDispatchWorker", "Edge Function", "scheduled_for due → enqueue sends")
-  }
+  subgraph outputs["External APIs + Data"]
+    direction TB
+    ms_graph["<b>Microsoft Graph</b><br/>External system"]
+    profiles["<b>profiles.ucalgary.ca</b><br/>External system<br/>Ingestion source"]
+    db[("<b>Database</b><br/>Supabase Postgres<br/>Service role writes")]
+  end
 
-  Rel(workers, queue, "Consume batches")
-  Rel(send_worker, db, "campaign_messages, outreach_threads, message_events")
-  Rel(send_worker, graph, "sendMail")
-  Rel(ingest_worker, profiles, "Batch crawl")
-  Rel(ingest_worker, db, "professors, professor_profiles")
-  Rel(reply_worker, graph, "Fetch message")
-  Rel(reply_worker, db, "thread_messages, message_events")
-  Rel(renew_worker, graph, "PATCH subscription")
-  Rel(dispatch_worker, db, "outreach_campaigns")
-  Rel(dispatch_worker, queue, "Enqueue per message")
+  runtime -->|"consume batches"| queue
+  queue -->|"due campaigns"| dispatch_worker
+  queue -->|"send jobs"| send_worker
+  queue -->|"reply-sync jobs"| reply_worker
+  queue -->|"renewal jobs"| renew_worker
+
+  dispatch_worker -->|"enqueue messages"| queue
+  dispatch_worker -->|"read campaigns"| db
+  send_worker -->|"sendMail"| ms_graph
+  send_worker -->|"message + thread rows"| db
+  ingest_worker -->|"batch crawl"| profiles
+  ingest_worker -->|"professor rows"| db
+  reply_worker -->|"fetch message"| ms_graph
+  reply_worker -->|"thread + event rows"| db
+  renew_worker -->|"PATCH subscription"| ms_graph
+
+  classDef runtimeNode fill:#f8fafc,stroke:#94a3b8,color:#0f172a,stroke-width:1px
+  classDef workerNode fill:#bfdbfe,stroke:#60a5fa,color:#0f172a,stroke-width:1px
+  classDef external fill:#e2e8f0,stroke:#94a3b8,color:#0f172a,stroke-width:1px
+  classDef dataNode fill:#d1fae5,stroke:#34d399,color:#064e3b,stroke-width:1px
+  class runtime runtimeNode
+  class dispatch_worker,send_worker,ingest_worker,reply_worker,renew_worker workerNode
+  class ms_graph,profiles external
+  class queue,db dataNode
+  linkStyle default stroke:#475569,stroke-width:1.5px,color:#0f172a
 ```
 
 ## Proposed repo layout
