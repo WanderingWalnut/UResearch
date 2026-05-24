@@ -86,7 +86,7 @@ _Avoid_: Full inbox, mailbox, email client
 - An **Outreach Thread** and **Thread Message** may also have **Message Events** such as `reply_detected` or `follow_up_sent`.
 - A **Student** and a **Professor** have at most one **Outreach Thread** between them.
 - An **Outreach Thread** contains one or more **Thread Messages**.
-- A **Campaign Message**, once sent, creates or attaches to the **Outreach Thread** for that **Student** and **Professor**.
+- A **Campaign Message**, once sent, creates or attaches to the **Outreach Thread** for that **Student** and **Professor** (reuse if thread already exists).
 - **Follow-ups** attach to an **Outreach Thread** and do not create new **Campaign Messages**.
 - An **Outreach Thread** has a conversation status such as `open`, `replied`, or `closed`. Do not schedule **Follow-ups** after the thread is `replied`.
 

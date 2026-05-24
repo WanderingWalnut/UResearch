@@ -5,8 +5,7 @@ Canonical domain language lives in [`CONTEXT.md`](../../CONTEXT.md). This docume
 Related docs:
 
 - [`system-design.md`](./system-design.md) — modules, flows, stack
-- [`diagrams/c4-context.md`](./diagrams/c4-context.md) — system context
-- [`diagrams/c4-container.md`](./diagrams/c4-container.md) — containers and integrations
+- [`diagrams/`](./diagrams/) — C4 context, container, component
 
 ## Design principles
 
@@ -71,7 +70,7 @@ Connected Microsoft 365 mailbox for send/reply.
 | `provider` | `microsoft` |
 | `mailbox_address` | Send-as address |
 | `consent_status` | `pending`, `connected`, `revoked` |
-| `refresh_token_ref` | Server-side secret reference, not raw token in row if using vault |
+| `refresh_token_ref` | UUID — FK to `vault.secrets.id`; Microsoft refresh token stored in Supabase Vault |
 | `graph_subscription_id` | Optional webhook subscription |
 | `created_at`, `updated_at` | |
 
@@ -94,8 +93,8 @@ Ingestion dedupe keys.
 | `id` | UUID PK |
 | `professor_id` | FK → `professors` |
 | `university_id` | FK → `universities` |
-| `source_type` | e.g. `ucalgary_directory`, `profile_url` |
-| `source_id` | Normalized external identifier |
+| `source_type` | e.g. `ucalgary_profiles` |
+| `source_id` | Profile slug from profiles.ucalgary.ca URL path |
 
 **Unique:** `(university_id, source_type, source_id)`
 
@@ -107,15 +106,20 @@ Current searchable view of a professor.
 | --- | --- |
 | `id` | UUID PK |
 | `professor_id` | FK → `professors` UNIQUE |
-| `display_name` | |
-| `department` | |
-| `email` | Mutable contact field |
-| `profile_url` | |
-| `research_text` | Concatenated interests/bio for search |
-| `embedding` | vector — pgvector |
+| `display_name` | Required for search indexing |
+| `department` | Optional; show fallback in UI if missing |
+| `email` | Optional for search; required before **Campaign Message** send |
+| `profile_url` | Canonical profiles.ucalgary.ca URL |
+| `research_text` | Required for search indexing; min ~50 chars |
+| `embedding` | vector(1536) — pgvector; `text-embedding-3-small`; cosine HNSW index |
+| `search_vector` | tsvector — GIN index on `display_name`, `department`, `research_text` |
 | `updated_at` | |
 
 **Soft rule:** at most one profile per `(university_id, email)` where email is present.
+
+**Searchability gate:** Profile appears in discovery when `display_name` and `research_text` (≥ ~50 chars) are present. Email not required for search or **Saved Professor**; required to add to **Outreach Campaign** or send.
+
+**Hybrid search:** Discovery runs semantic (pgvector) + keyword (FTS on `search_vector`) legs in parallel, filtered by `university_id`, merged with RRF. Embedding input at ingest: `{display_name}\nDepartment: {department or "Unknown"}\n{research_text}`.
 
 ### `saved_professors`
 
@@ -139,9 +143,13 @@ Reusable student-owned templates.
 | `id` | UUID PK |
 | `student_id` | FK → `students` |
 | `name` | |
-| `subject` | With placeholders |
-| `body` | HTML or markdown with placeholders |
+| `subject` | Mustache placeholders — see system-design.md |
+| `body` | HTML or markdown with Mustache placeholders |
 | `created_at`, `updated_at` | |
+
+**Launch placeholders:** `professor_name`, `professor_first_name`, `department`, `research_snippet`, `profile_url`, `student_name`. Missing values use documented fallbacks; raw `{{key}}` must not appear in approved snapshots.
+
+**Starter templates:** Three system defaults copied to new students on first sign-in (General research inquiry, Referencing specific research, Short introduction).
 
 ### `outreach_campaigns`
 
@@ -196,6 +204,10 @@ One conversation per student–professor pair.
 | `created_at`, `updated_at` | |
 
 **Unique:** `(student_id, professor_id)`
+
+**Second campaign:** Additional **Campaign Messages** to the same **Professor** reuse this thread; `first_campaign_id` is unchanged. Message history spans campaigns via **Thread Message** `campaign_message_id` / `source`.
+
+**Inbox sort:** `replied` threads first, then by `last_activity_at` desc. **Status chip:** one primary chip — Replied > Opened (latest campaign message) > No reply · 7d > none.
 
 ### `thread_messages`
 
@@ -319,8 +331,4 @@ Pixel endpoint writes `message_events` row with `event_type = 'opened'`. UI show
 - **Ingestion tables:** service role only for workers.
 - **message_events:** readable when parent entity belongs to student; pixel endpoint uses service role insert.
 
-## Open questions (data model)
-
-- First UCalgary ingestion source and refresh cadence.
-- Whether Microsoft Graph permissions pass app verification for the launch audience.
-- Exact placeholder set for **Message Template** personalization.
+Module boundaries and folder layout: [`diagrams/c4-component.md`](./diagrams/c4-component.md).

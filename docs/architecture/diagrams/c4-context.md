@@ -31,7 +31,7 @@ C4Context
 | Sign-in | Student → Microsoft → UResearch | Domain validated against university allowlist |
 | Discovery | Student → UResearch | Reads pre-ingested profiles only |
 | Campaign send | UResearch → Graph → Professor mailbox | Sent from student mailbox address |
-| Reply sync | Graph → UResearch | Webhook or delta query |
+| Reply sync | Graph → UResearch | Change notification webhooks |
 | Open signal | Professor mail client → UResearch pixel | Recorded as `opened` **Message Event** |
 
 ## Out of scope at context level

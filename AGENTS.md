@@ -36,6 +36,14 @@ Attribution: `~/.agents/skills/ARCHITECT-SKILLS-SOURCES.md`
 
 Pair architect planning with: `to-prd`, `grill-me`, `grill-with-docs`, `prototype`, `to-issues`.
 
+### Coding behavior
+
+Default coding behavior follows **Karpathy guidelines** — think before coding, simplicity first, surgical changes, goal-driven execution. Read and follow `~/.agents/skills/karpathy-guidelines/SKILL.md` when writing, reviewing, or refactoring code.
+
+This repo also enforces them via `.cursor/rules/karpathy-guidelines.mdc` (`alwaysApply: true`).
+
+Attribution: [multica-ai/andrej-karpathy-skills](https://github.com/multica-ai/andrej-karpathy-skills)
+
 ### Domain context
 
 See [GIST.md](./GIST.md) for the product summary.

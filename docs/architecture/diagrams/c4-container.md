@@ -29,7 +29,7 @@ C4Container
   Rel(api, queue, "Enqueues jobs")
   Rel(workers, queue, "Consumes batches")
   Rel(workers, db, "Updates state + message_events")
-  Rel(workers, graph, "sendMail, delta/webhook sync")
+  Rel(workers, graph, "sendMail, webhook sync, subscription renewal")
   Rel(realtime, db, "Broadcasts row changes")
   Rel(web, realtime, "Subscribes")
   Rel(pixel, db, "Inserts opened events", "Service role")
@@ -47,14 +47,4 @@ C4Container
 | Inbox | Web + Workers + thread tables |
 | Workers | Supabase Edge Functions + Queue |
 
-## Component diagram (next zoom)
-
-When implementing, the next C4 level should zoom into the **App Server** container:
-
-- IdentityService
-- DiscoveryService
-- CampaignService
-- MailboxService
-- InboxService
-
-Each service owns the aggregate roots listed in [`data-model.md`](../data-model.md).
+See [`diagrams/c4-component.md`](./diagrams/c4-component.md) for App Server module boundaries and proposed `src/modules/` layout.
