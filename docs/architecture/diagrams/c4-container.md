@@ -59,7 +59,7 @@ flowchart LR
   class web,pixel,api,workers appNode;
   class auth,db,queue,realtime dataNode;
   class ms_graph,ucalgary_sources externalNode;
-  linkStyle default stroke:#475569,stroke-width:1.5px,color:#0f172a;
+  linkStyle default stroke:#475569,stroke-width:1.5px;
 ```
 
 ## Module to container mapping

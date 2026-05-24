@@ -56,7 +56,7 @@ flowchart LR
   class identity,discovery,campaigns,inbox,mailbox appNode
   class auth,ms_graph external
   class db,queue dataNode
-  linkStyle default stroke:#475569,stroke-width:1.5px,color:#0f172a
+  linkStyle default stroke:#475569,stroke-width:1.5px
 ```
 
 ## Background Workers (Supabase Edge Functions)
@@ -109,7 +109,7 @@ flowchart LR
   class dispatch_worker,send_worker,ingest_worker,reply_worker,renew_worker workerNode
   class ms_graph,profiles external
   class queue,db dataNode
-  linkStyle default stroke:#475569,stroke-width:1.5px,color:#0f172a
+  linkStyle default stroke:#475569,stroke-width:1.5px
 ```
 
 ## Proposed repo layout

@@ -34,7 +34,7 @@ flowchart LR
   class student,professor personNode;
   class uresearch systemNode;
   class microsoft,exchange,ucalgary_data externalNode;
-  linkStyle default stroke:#475569,stroke-width:1.5px,color:#0f172a;
+  linkStyle default stroke:#475569,stroke-width:1.5px;
 ```
 
 ## Data flows (summary)
