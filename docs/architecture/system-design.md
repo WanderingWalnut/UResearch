@@ -164,7 +164,7 @@ Owns Outreach Threads only. UResearch does not mirror the Student's full mailbox
 1. Student searches Professor Profiles.
 2. Student selects Professors and a template.
 3. The app generates or previews personalized Campaign Messages.
-4. Student approves the Outreach Campaign, optionally sets `scheduled_for`, and snapshots become immutable.
+4. Student approves the Outreach Campaign, optionally sets `scheduled_for`, and recipient contact plus rendered message snapshots become immutable.
 5. The app creates Campaign Message rows in `queued` state and enqueues send jobs (immediately or at scheduled time via UResearch workers, not Outlook deferred send).
 
 **Message Template placeholders (settled):** Mustache-style `{{key}}` syntax. Six launch placeholders:
@@ -178,7 +178,7 @@ Owns Outreach Threads only. UResearch does not mirror the Student's full mailbox
 | `{{profile_url}}` | `professor_profiles.profile_url` | Empty string |
 | `{{student_name}}` | `students.display_name` | Sign-in name or `"[Your name]"` |
 
-Render at preview and approval; never leave raw placeholders in sent email. Do not include professor email in templates — `recipient_email_snapshot` is set at send time.
+Render at preview and approval; never leave raw placeholders in sent email. Do not include professor email in templates — `recipient_email_snapshot` is frozen from the current Professor Profile at approval.
 
 **Starter templates (settled):** On first sign-in, copy three system defaults into the student's **Message Templates**: "General research inquiry", "Referencing specific research", "Short introduction". Student-owned and editable/deletable.
 

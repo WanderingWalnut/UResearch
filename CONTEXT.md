@@ -17,7 +17,7 @@ An academic researcher or lab lead a **Student** may contact for research opport
 _Avoid_: Research contact, recipient, PI
 
 **Professor Profile**:
-UResearch's current searchable view of a **Professor**, including research interests and contact details collected before students search. Profile fields such as email may change over time; outbound messages store contact snapshots at send time.
+UResearch's current searchable view of a **Professor**, including research interests and contact details collected before students search. Profile fields such as email may change over time; outbound campaign messages store contact snapshots at approval time.
 _Avoid_: Project, opportunity, listing
 
 **Professor Source Key**:
@@ -33,7 +33,7 @@ A reusable outreach email pattern owned by a **Student**, with subject, body, an
 _Avoid_: Email draft, campaign, snippet
 
 **Outreach Campaign**:
-A student-approved batch of personalized outreach emails to selected **Professors**. Has a student-chosen name and selected **Professors**; there is no separate reusable Audience entity at launch. Stays in `draft` until the **Student** explicitly approves it; after approval, rendered message snapshots are immutable. May include an optional `scheduled_for` time; when null, sending starts immediately after approval.
+A student-approved batch of personalized outreach emails to selected **Professors**. Has a student-chosen name and selected **Professors**; there is no separate reusable Audience entity at launch. Stays in `draft` until the **Student** explicitly approves it; after approval, recipient contact and rendered message snapshots are immutable. May include an optional `scheduled_for` time; when null, sending starts immediately after approval.
 _Avoid_: Blast, mail merge, send job, audience list
 
 **Campaign Message**:
@@ -108,7 +108,7 @@ _Avoid_: Full inbox, mailbox, email client
 - "automated follow-ups at launch" — resolved: **Follow-ups** are manual and student-triggered at launch; automated sends may come later.
 - "save potential matches" from product summary — resolved: use **Saved Professor** as a personal shortlist independent of **Outreach Campaigns**.
 - "template snapshot without template entity" — resolved: **Message Template** is a reusable student-owned entity; **Outreach Campaign** stores an immutable snapshot at approval.
-- "when is a campaign created and can it be edited after approval?" — resolved: campaign stays `draft` until explicit approval; after approval, rendered **Campaign Message** snapshots are immutable; unsent messages may be cancelled but not silently rewritten.
+- "when is a campaign created and can it be edited after approval?" — resolved: campaign stays `draft` until explicit approval; after approval, recipient contact and rendered **Campaign Message** snapshots are immutable; unsent messages may be cancelled but not silently rewritten.
 - "scheduled campaign sends" — resolved: optional campaign-level `scheduled_for` at approval, default send-now; UResearch workers dispatch at the scheduled time rather than relying on Outlook deferred send for bulk campaigns.
 - "Audiences as separate entity" from Stitch designs — resolved: no separate Audience at launch; an **Outreach Campaign** name plus its selected **Professors** is the audience; **Saved Professors** is the reusable selection pool.
 - "exact UCalgary email domain rules" — resolved: use a per-**University** allowed email domain allowlist; launch with `ucalgary.ca` only, extensible without model changes.

@@ -22,7 +22,7 @@ Related docs:
 | Identity | `students` | `student_mailboxes` | Sign-in, domain validation, mailbox consent |
 | Professor Discovery | `professors` | `professor_profiles`, `professor_source_keys` | Ingestion upsert per source key |
 | Discovery (student) | `students` | `saved_professors` | Save/unsave professor |
-| Campaigns | `outreach_campaigns` | `campaign_messages` | Draft edits; approval freezes snapshots |
+| Campaigns | `outreach_campaigns` | `campaign_messages` | Draft edits; approval freezes recipient and message snapshots |
 | Inbox | `outreach_threads` | `thread_messages` | Reply sync, manual follow-up send |
 | Templates | `message_templates` | — | Template CRUD owned by student |
 
@@ -179,7 +179,7 @@ One initial outbound email per professor in a campaign.
 | `professor_id` | FK → `professors` |
 | `outreach_thread_id` | FK → `outreach_threads` nullable until sent |
 | `status` | See message state machine |
-| `recipient_email_snapshot` | Email used at send time |
+| `recipient_email_snapshot` | Professor email frozen at campaign approval |
 | `subject_snapshot` | Rendered subject |
 | `body_snapshot` | Rendered HTML body |
 | `graph_message_id` | Set after Graph send |
