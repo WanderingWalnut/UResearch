@@ -19,7 +19,7 @@ Related docs:
 
 | Context | Aggregate root | Child entities | Transaction boundary |
 | --- | --- | --- | --- |
-| Identity | `students` | `student_mailboxes` | Sign-in, domain validation, mailbox consent |
+| Identity | `students` | — | Verified sign-in and domain validation |
 | Professor Discovery | `professors` | `professor_profiles`, `professor_source_keys` | Ingestion upsert per source key |
 | Discovery (student) | `students` | `saved_professors` | Save/unsave professor |
 | Campaigns | `outreach_campaigns` | `campaign_messages` | Draft edits; approval freezes recipient and message snapshots |
@@ -53,26 +53,15 @@ Domain actor; one row per Supabase Auth user.
 | `id` | UUID PK |
 | `auth_user_id` | UUID UNIQUE — FK to `auth.users` |
 | `university_id` | FK → `universities` |
-| `email` | From Microsoft sign-in; must match allowlist |
+| `email` | From verified sign-in; must match allowlist |
 | `display_name` | Optional |
 | `created_at`, `updated_at` | |
 
-**Rule:** Created or updated on first Microsoft sign-in after domain validation.
+**Rule:** Created or updated after verified sign-in and domain validation.
 
-### `student_mailboxes`
+### Delivery-provider schema
 
-Connected Microsoft 365 mailbox for send/reply.
-
-| Column | Notes |
-| --- | --- |
-| `id` | UUID PK |
-| `student_id` | FK → `students` UNIQUE at launch |
-| `provider` | `microsoft` |
-| `mailbox_address` | Send-as address |
-| `consent_status` | `pending`, `connected`, `revoked` |
-| `refresh_token_ref` | UUID — FK to `vault.secrets.id`; Microsoft refresh token stored in Supabase Vault |
-| `graph_subscription_id` | Optional webhook subscription |
-| `created_at`, `updated_at` | |
+Deferred. Do not add a provider-specific mailbox table until the replacement PRD selects the launch delivery and reply-sync strategy.
 
 ### `professors`
 
@@ -182,8 +171,8 @@ One initial outbound email per professor in a campaign.
 | `recipient_email_snapshot` | Professor email frozen at campaign approval |
 | `subject_snapshot` | Rendered subject |
 | `body_snapshot` | Rendered HTML body |
-| `graph_message_id` | Set after Graph send |
-| `graph_conversation_id` | For reply matching |
+| `provider_message_id` | Set after provider send when available |
+| `provider_conversation_id` | For reply matching when available |
 | `open_tracking_token` | Opaque pixel token |
 | `created_at`, `updated_at` | |
 
@@ -218,11 +207,11 @@ Inbound and outbound messages in a thread.
 | `id` | UUID PK |
 | `thread_id` | FK → `outreach_threads` |
 | `direction` | `outbound`, `inbound` |
-| `source` | `campaign`, `manual_reply`, `follow_up`, `graph_sync` |
+| `source` | `campaign`, `manual_reply`, `follow_up`, `provider_sync` |
 | `campaign_message_id` | FK nullable — set when sourced from campaign send |
 | `subject` | |
 | `body` | |
-| `graph_message_id` | |
+| `provider_message_id` | |
 | `sent_at` | |
 | `created_at` | |
 
@@ -237,7 +226,7 @@ Unified append-only event stream.
 | `entity_id` | UUID |
 | `event_type` | See event types below |
 | `occurred_at` | timestamptz |
-| `source` | `worker`, `pixel_endpoint`, `graph_sync`, `user` |
+| `source` | `worker`, `pixel_endpoint`, `provider_sync`, `user` |
 | `payload` | jsonb |
 
 **Event types (launch):**
@@ -246,7 +235,7 @@ Unified append-only event stream.
 | --- | --- | --- |
 | `queued` | campaign_message | Approved and waiting for worker |
 | `sending` | campaign_message | Worker claimed send |
-| `sent` | campaign_message | Graph send accepted |
+| `sent` | campaign_message | Delivery provider accepted send |
 | `failed` | campaign_message | Send or sync error |
 | `retried` | campaign_message | Retry scheduled |
 | `opened` | campaign_message | Pixel requested |
@@ -308,11 +297,11 @@ Do not prompt **Follow-ups** when status is `replied`.
 
 ## Scheduling model
 
-Campaign scheduling is **UResearch-owned**, not Outlook deferred send:
+Campaign scheduling is **UResearch-owned**, not mailbox-provider deferred send:
 
 1. Approval stores `scheduled_for` (nullable).
 2. Dispatch worker selects campaigns where `approved_at` is set and `scheduled_for <= now()`.
-3. Worker calls Graph `sendMail` immediately at dispatch time.
+3. Worker invokes the selected delivery provider immediately at dispatch time.
 
 ## Open tracking
 
@@ -322,7 +311,7 @@ When `open_tracking_enabled` is true, `body_snapshot` includes:
 <img src="https://uresearch.app/t/o/{open_tracking_token}" width="1" height="1" alt="" />
 ```
 
-Pixel endpoint writes `message_events` row with `event_type = 'opened'`. UI shows **Opened** from this event stream. Outlook may block or prefetch images; dedupe and expect gaps.
+Pixel endpoint writes `message_events` row with `event_type = 'opened'`. UI shows **Opened** from this event stream. Email clients may block or prefetch images; dedupe and expect gaps.
 
 ## Row Level Security (sketch)
 

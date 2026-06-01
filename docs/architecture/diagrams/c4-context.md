@@ -15,16 +15,15 @@ flowchart LR
 
   subgraph external["External Systems"]
     direction TB
-    microsoft["<b>Microsoft 365 / Azure AD</b><br/>OAuth sign-in and student mailbox via Graph"];
-    exchange["<b>Exchange Online</b><br/>Delivers email to professor inboxes"];
+    identity["<b>Identity Provider TBD</b><br/>Verified university-email sign-in"];
+    delivery["<b>Email Delivery Integration TBD</b><br/>Launch approach under review"];
     ucalgary_data["<b>UCalgary Profile Sources</b><br/>Professor directory pages/APIs for ingestion"];
   end
 
   student -->|"discover / campaign / inbox"| uresearch;
-  student -->|"sign in + consent"| microsoft;
-  uresearch -->|"send mail / sync replies"| microsoft;
-  microsoft -->|"route mail"| exchange;
-  professor -->|"read + reply"| exchange;
+  student -->|"sign in"| identity;
+  uresearch -->|"send mail / sync supported replies"| delivery;
+  delivery -->|"deliver mail"| professor;
   uresearch -->|"ingest profiles"| ucalgary_data;
   professor -->|"tracking pixel request"| uresearch;
 
@@ -33,7 +32,7 @@ flowchart LR
   classDef externalNode fill:#e2e8f0,stroke:#94a3b8,color:#0f172a,stroke-width:1px;
   class student,professor personNode;
   class uresearch systemNode;
-  class microsoft,exchange,ucalgary_data externalNode;
+  class identity,delivery,ucalgary_data externalNode;
   linkStyle default stroke:#475569,stroke-width:1.5px;
 ```
 
@@ -41,10 +40,10 @@ flowchart LR
 
 | Flow | Direction | Notes |
 | --- | --- | --- |
-| Sign-in | Student → Microsoft → UResearch | Domain validated against university allowlist |
+| Sign-in | Student → identity provider → UResearch | Domain validated against university allowlist |
 | Discovery | Student → UResearch | Reads pre-ingested profiles only |
-| Campaign send | UResearch → Graph → Professor mailbox | Sent from student mailbox address |
-| Reply sync | Graph → UResearch | Change notification webhooks |
+| Campaign send | UResearch → selected delivery integration → Professor mailbox | Launch delivery strategy under review |
+| Reply sync | Selected integration → UResearch | Launch reply-sync strategy under review |
 | Open signal | Professor mail client → UResearch pixel | Recorded as `opened` **Message Event** |
 
 ## Out of scope at context level

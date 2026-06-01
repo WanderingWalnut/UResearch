@@ -1,22 +1,26 @@
 # UResearch System Design
 
-UResearch is a campaign manager and focused inbox for students seeking summer research positions. For launch, the system helps a Student at the University of Calgary discover UCalgary Professor Profiles, create Outreach Campaigns, send personalized emails through the Student's university mailbox, and track campaign progress, opens, replies, and follow-ups.
+UResearch is a campaign manager for students seeking summer research positions. For launch, the system helps a Student at the University of Calgary discover UCalgary Professor Profiles, create Outreach Campaigns, send personalized emails, and track campaign progress.
+
+## Strategy Reset
+
+The original Microsoft Graph delegated-permission approach is paused. A real UCalgary account reached a tenant-admin approval gate for the requested mailbox scopes, so Azure OAuth, automated mailbox sending, and reply sync are not launch assumptions. Identity, outbound delivery, and reply-sync options must be selected before those integrations are implemented. See [ADR-0004](../adr/0004-pause-microsoft-graph-mailbox-integration.md).
 
 ## Launch Goals
 
 - Help Students find relevant Professors at their own University.
 - Let Students create bulk Outreach Campaigns without blocking the web request.
-- Send Campaign Messages through the Student Mailbox for trust and reply continuity.
+- Choose a launch delivery path that students can use without tenant-admin approval.
 - Persist every meaningful state change so refreshes and retries are safe.
 - Keep the stack cheap and fast to build.
 
 ## Non-Goals
 
 - Full cross-university outreach at launch.
-- A full Outlook replacement or general-purpose inbox.
+- A full email client or general-purpose inbox.
 - Live scraping in the Student search path.
 - Microservices from day one.
-- Guaranteed confirmed-read tracking. UResearch records **Opened** from pixel **Message Events**; Outlook may block or prefetch images.
+- Guaranteed confirmed-read tracking. UResearch records **Opened** from pixel **Message Events**; email clients may block or prefetch images.
 
 ## Phase Boundaries
 
@@ -42,7 +46,7 @@ Launch entities:
 - `Message Template`: reusable student-owned outreach pattern.
 - `Outreach Campaign`: named batch with selected professors; optional `scheduled_for`.
 - `Campaign Message`: initial personalized send per professor.
-- `Student Mailbox`: connected Microsoft 365 mailbox.
+- `Student Mailbox`: outbound email identity; launch integration strategy is unresolved.
 - `Outreach Thread`: one conversation per student–professor pair.
 - `Thread Message`: replies, follow-ups, and synced mail in a thread.
 - `Message Event`: unified append-only event stream including `opened`.
@@ -53,12 +57,12 @@ Launch entities:
 flowchart LR
   Student[Student] --> Web[Next.js Web App on Vercel]
   Web --> Supabase[(Supabase Postgres)]
-  Web --> Auth[Supabase Auth with Azure OAuth]
+  Web --> Auth[Supabase Auth]
   Web --> Queue[Supabase Queues]
   Web --> Realtime[Supabase Realtime]
   Queue --> Workers[Supabase Edge Workers]
-  Workers --> Graph[Microsoft Graph]
-  Graph --> Mailbox[Student Mailbox]
+  Workers --> Delivery[Email delivery integration TBD]
+  Delivery --> Mailbox[Professor mailbox]
   Professor[Professor] --> Mailbox
   Pixel[Open Tracking Endpoint] --> Supabase
 ```
@@ -67,8 +71,8 @@ flowchart LR
 
 - Web app: Next.js on Vercel.
 - Database: Supabase Postgres.
-- Auth: Supabase Auth with Azure OAuth for Microsoft sign-in and mailbox consent.
-- Mailbox API: Microsoft Graph.
+- Auth: Supabase Auth; launch sign-in method is under review.
+- Email delivery: under review. Do not add provider-specific schema until selected.
 - Queue: Supabase Queues.
 - Workers: Supabase Edge Functions processing small queue batches.
 - Realtime UI updates: Supabase Realtime, with polling fallback.
@@ -80,7 +84,7 @@ The main fallback path is `QStash + Vercel Functions` if Supabase Queue or Edge 
 
 ### Identity
 
-Owns Student identity, University inference from email domain, Azure OAuth session, and mailbox consent. For launch, Microsoft sign-in and mailbox consent are one combined flow.
+Owns Student identity, University inference from a verified email domain, and the Supabase Auth session. The launch sign-in method is under review.
 
 ### Professor Discovery
 
@@ -92,7 +96,7 @@ Owns Outreach Campaigns, selected Professor Profiles, message personalization, c
 
 ### Mailbox Integration
 
-Owns Microsoft Graph sending, reply detection, thread matching, provider tokens, token refresh, webhook-based inbox sync, subscription renewal, and provider event logging.
+Owns delivery-provider integration, reply detection where supported, thread matching, provider credentials where needed, and provider event logging. The launch implementation is under review.
 
 ### Workers
 
@@ -104,26 +108,16 @@ Owns Outreach Threads only. UResearch does not mirror the Student's full mailbox
 
 ## Core Flows
 
-### Sign In And Connect Mailbox
+### Sign In And Email Delivery
 
-1. Student signs in with Microsoft/Azure OAuth.
-2. UResearch requests delegated scopes in one consent screen: `openid`, `profile`, `email`, `User.Read`, `Mail.Send`, `Mail.Read`, `offline_access`.
-3. The app validates the Student's university email domain.
-4. The app creates or updates the Student and Student Mailbox records.
-5. Microsoft refresh tokens are stored in Supabase Vault; `student_mailboxes.refresh_token_ref` holds the vault secret ID. Workers read tokens via service role only.
+The launch identity and delivery flow is intentionally unresolved. The next PRD must choose:
 
-**Token storage (settled):** Supabase Vault (`vault.secrets`) for Microsoft refresh tokens. On OAuth callback, insert token into vault with metadata (`student_id`, `provider: microsoft`); store returned secret UUID in `refresh_token_ref`. On rotation, update the vault secret in place. On revoke, delete vault secret and set `consent_status = revoked`. Access tokens stay in worker memory only.
+1. How a Student proves control of an allowed university email address.
+2. Whether outreach is a manual Outlook compose handoff or automated through a UResearch-managed sender.
+3. Whether launch reply tracking is manual, forwarding-based, webhook-based, or deferred.
+4. Which provider credentials, if any, must be stored server-side.
 
-**Scope rationale (settled):**
-
-- `Mail.Send` — send **Campaign Messages** and manual **Thread Message** replies from the **Student Mailbox**.
-- `Mail.Read` — read inbox for reply sync and mail change notification subscriptions; `Mail.ReadWrite` is not needed because UResearch does not move, flag, or delete mail.
-- `offline_access` — refresh tokens for async workers without the student being online.
-- Do not request application permissions or `Mail.ReadBasic` at launch.
-
-**App registration (settled):** Multi-tenant (`AzureADMultipleOrgs`) app registered in UResearch's Azure tenant. OAuth authority: `https://login.microsoftonline.com/organizations` (work/school accounts only). UResearch enforces the launch boundary via **University** email domain allowlist in app code — not via Azure `signInAudience`.
-
-**Consent assumption (settled):** Launch assumes individual user consent at sign-in works for `@ucalgary.ca` students. Do not pursue tenant admin consent or UCalgary IT pre-approval as a launch path. Complete Microsoft publisher verification for trust on the consent screen. Validate with real student accounts before broad launch. If user consent is blocked by tenant policy, pivot auth/mailbox strategy rather than pursuing admin consent.
+The reusable constraints remain settled: one Supabase Auth user maps to one Student, University admission uses the email-domain allowlist, provider credentials never reach browser code, and provider-specific tables wait until the delivery strategy is selected.
 
 ### Professor Profile Ingestion
 
@@ -165,7 +159,7 @@ Owns Outreach Threads only. UResearch does not mirror the Student's full mailbox
 2. Student selects Professors and a template.
 3. The app generates or previews personalized Campaign Messages.
 4. Student approves the Outreach Campaign, optionally sets `scheduled_for`, and recipient contact plus rendered message snapshots become immutable.
-5. The app creates Campaign Message rows in `queued` state and enqueues send jobs (immediately or at scheduled time via UResearch workers, not Outlook deferred send).
+5. The app creates Campaign Message rows in `queued` state and enqueues send jobs when the selected delivery strategy supports automated dispatch.
 
 **Message Template placeholders (settled):** Mustache-style `{{key}}` syntax. Six launch placeholders:
 
@@ -184,12 +178,7 @@ Render at preview and approval; never leave raw placeholders in sent email. Do n
 
 ### Async Sending
 
-1. A Supabase Edge Worker reads a small batch from Supabase Queues.
-2. For each Campaign Message, the worker marks it `sending`.
-3. The worker sends through Microsoft Graph using the Student Mailbox.
-4. The worker marks the message `sent` or `failed` and records provider metadata.
-5. Supabase Realtime pushes row changes to the campaign UI.
-6. If the browser refreshes, the UI reloads current state from Postgres.
+Automated dispatch is deferred until the launch delivery provider is selected. If it is included, a Supabase Edge Worker reads a small queue batch, marks each Campaign Message `sending`, invokes the provider, records provider metadata, and marks the message `sent` or `failed`.
 
 ### Open Tracking
 
@@ -200,21 +189,7 @@ Render at preview and approval; never leave raw placeholders in sent email. Do n
 
 ### Reply Sync
 
-1. On mailbox connect, UResearch creates a Graph change notification subscription on `me/mailFolders('Inbox')/messages` (`changeType: created`).
-2. The webhook endpoint validates Graph handshake requests, acknowledges notifications quickly, and enqueues reply-sync jobs.
-3. Reply-sync workers fetch new messages, match them to **Outreach Threads**, and record `reply_detected` **Message Events**; matched threads move to `replied`.
-4. A subscription renewal worker renews inbox subscriptions before expiry (~3-day max lifetime for mail).
-5. Student can reply from UResearch through the same **Student Mailbox**.
-
-**Reply sync (settled):** Webhooks only at launch — no delta-query polling fallback. Reliability comes from a robust webhook endpoint, subscription renewal, and idempotent reply matching — not scheduled inbox polling.
-
-**Reply matching (settled):** Three-tier cascade for inbound messages (ignore student's own outbound copies and already-processed `graph_message_id`):
-
-1. `conversationId` matches `campaign_messages.graph_conversation_id` or a **Thread Message** in the thread.
-2. `In-Reply-To` / `internetMessageId` matches `graph_message_id` on a sent **Campaign Message** or **Thread Message**.
-3. Subject heuristic — sender matches `recipient_email_snapshot` AND normalized subject matches `subject_snapshot` (strip `Re:` / `Fwd:` prefixes).
-
-No match → ignore (do not create orphan threads). Emit structured worker logs on every inbound sync attempt: tier matched (1–3) on success; on miss, log `reply_match_miss` with `graph_message_id`, `conversationId`, sender, subject, and tiers tried — for diagnosing header-breaking edge cases. Not persisted in `message_events` (ops telemetry only).
+Automated reply sync is deferred until the launch delivery strategy is selected. If the chosen provider supports inbound events, workers should match provider messages to **Outreach Threads**, append `reply_detected` **Message Events**, and move matched threads to `replied`. No provider-specific webhook contract or matching cascade is settled yet.
 
 **Second campaign to same professor (settled):** Reuse existing **Outreach Thread** (Option A). New **Campaign Message** attaches to the same thread; append outbound **Thread Message** with `source: campaign`. `first_campaign_id` stays on the original campaign. UI may show prior contact warning; if thread is `replied`, warn before send but allow it.
 
@@ -257,9 +232,8 @@ See [`data-model.md`](./data-model.md) for entities, aggregates, constraints, an
 | --- | --- | --- | --- |
 | Professor profile ingestion | Weekly schedule + manual | Supabase Edge Worker | Crawls profiles.ucalgary.ca; upsert by source key. |
 | Embedding generation | Profile changed | Supabase Edge Worker | Keep out of search request path. |
-| Campaign dispatch | Campaign approved or scheduled_for due | Supabase Edge Worker | UResearch-owned schedule; Graph sendMail at dispatch time. |
-| Reply sync | Graph change notification | Supabase Edge Worker | Webhook enqueues job; no delta polling at launch. |
-| Subscription renewal | Scheduled (~daily) | Supabase Edge Worker | Renew mail inbox subscriptions before expiry. |
+| Campaign dispatch | Campaign approved or scheduled_for due | Supabase Edge Worker | Deferred until automated delivery is selected. |
+| Reply sync | Provider event | Supabase Edge Worker | Deferred until reply-sync strategy is selected. |
 | Open event record | Pixel request | Vercel or Supabase endpoint | Inserts `opened` into `message_events`. |
 | Follow-up reminder | Manual student action | Web app | No automated send at launch. |
 
@@ -267,11 +241,10 @@ See [`data-model.md`](./data-model.md) for entities, aggregates, constraints, an
 
 - All workers must be idempotent.
 - A queue job references database IDs, not full mutable payloads.
-- Sending a Campaign Message must check current status before calling Graph.
+- Sending a Campaign Message must check current status before invoking a delivery provider.
 - Failed jobs record enough detail for retry or diagnosis.
 - Provider throttling should update message state and retry later, not block the campaign UI.
 - Workers process small batches to stay under Edge Function limits.
-- Graph inbox subscriptions must be renewed before expiry; treat lapsed subscriptions as an operational alert.
 
 ## Cost Rules
 
@@ -283,23 +256,22 @@ See [`data-model.md`](./data-model.md) for entities, aggregates, constraints, an
 
 ## Security And Privacy
 
-- Store Microsoft refresh tokens in Supabase Vault; never in RLS-readable columns or the browser.
 - Never expose service role keys or provider tokens to the browser.
 - Use Row Level Security for Student-owned data in Supabase.
 - Treat Opened Events as sensitive telemetry.
-- Respect mailbox scope minimization: UResearch only manages Outreach Threads.
-- Use clear consent copy for mailbox sending and reply tracking.
+- Minimize permissions for any selected provider integration.
+- Use clear consent copy if mailbox sending or reply tracking is added.
 
 ## Implementation Sequencing
 
-**Vertical slices (settled):** Auth-first because user consent is the launch gate. Migrations ship per slice — not big-bang.
+**Vertical slices:** Migrations ship per slice, not big-bang. Identity and delivery need a replacement PRD before implementation resumes.
 
 | Slice | Ships | Migrations added | Exit criteria |
 | --- | --- | --- | --- |
-| **1. Auth + mailbox** | Microsoft sign-in, domain gate, Vault tokens, starter templates | `universities`, `students`, `student_mailboxes`, `message_templates` (seed) | Real `@ucalgary.ca` account signs in; token in Vault; Graph calls succeed |
+| **1. Student foundation** | Identity and delivery strategy reset | `universities`, `students`, `message_templates` | Replacement PRD chooses a tenant-compatible sign-in and outreach path |
 | **2. Discovery** | Manual ingestion, hybrid search, discovery UI | `professors`, `professor_source_keys`, `professor_profiles`, `saved_professors` | Student searches and saves professors |
-| **3. Campaign send** | Templates, draft/approve, queue worker, Graph send | `outreach_campaigns`, `campaign_messages`, queues | Approved campaign sends from student mailbox |
-| **4. Inbox + reply sync** | Webhook, three-tier matching, thread UI | `outreach_threads`, `thread_messages`, `message_events` (partial) | Reply appears; replied threads sort first |
+| **3. Campaign send** | Templates, draft/approve, selected delivery flow | `outreach_campaigns`, `campaign_messages`, queues if needed | Approved campaign uses the selected delivery flow |
+| **4. Inbox + reply sync** | Selected reply-sync flow, thread UI | `outreach_threads`, `thread_messages`, `message_events` (partial) | Supported replies appear; replied threads sort first |
 | **5. Open pixel** | Tracking endpoint, **Opened** chip | `message_events` (`opened`), pixel route | Open signal recorded (best-effort) |
 
 **Migration strategy (settled):** `data-model.md` is the blueprint; Supabase migrations land just-in-time per slice. Do not migrate the full schema before slice 1 — only what that slice needs. Expand schema as features ship; avoid unused tables and speculative columns.

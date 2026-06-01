@@ -24,7 +24,7 @@ flowchart LR
 
     subgraph platform["Supabase Platform"]
       direction TB
-      auth["<b>Auth</b><br/>Supabase Auth + Azure OAuth<br/>Student sessions"];
+      auth["<b>Auth</b><br/>Supabase Auth<br/>Student sessions"];
       db[("<b>Database</b><br/>Supabase Postgres + pgvector<br/>Students, profiles, campaigns, threads, message_events")];
       queue["<b>Job Queue</b><br/>Supabase Queues<br/>Async send and sync work"];
       realtime["<b>Realtime</b><br/>Supabase Realtime<br/>Live campaign and inbox updates"];
@@ -33,7 +33,7 @@ flowchart LR
 
   subgraph external["External Systems"]
     direction TB
-    ms_graph["<b>Microsoft Graph</b><br/>Mail send and mailbox sync"];
+    delivery["<b>Email Delivery Integration TBD</b><br/>Send and supported reply sync"];
     ucalgary_sources["<b>UCalgary Sources</b><br/>Profile ingestion inputs"];
   end
 
@@ -45,7 +45,7 @@ flowchart LR
   api -->|"enqueue jobs"| queue;
   queue -->|"job batches"| workers;
   workers -->|"state + events"| db;
-  workers -->|"send/sync/renew"| ms_graph;
+  workers -->|"send / supported sync"| delivery;
   workers -->|"fetch profiles"| ucalgary_sources;
   db -->|"row changes"| realtime;
   realtime -->|"live updates"| web;
@@ -58,7 +58,7 @@ flowchart LR
   class student personNode;
   class web,pixel,api,workers appNode;
   class auth,db,queue,realtime dataNode;
-  class ms_graph,ucalgary_sources externalNode;
+  class delivery,ucalgary_sources externalNode;
   linkStyle default stroke:#475569,stroke-width:1.5px;
 ```
 
@@ -66,10 +66,10 @@ flowchart LR
 
 | Module (from system design) | Primary container |
 | --- | --- |
-| Identity | Web + Auth + App server + `students`, `student_mailboxes` |
+| Identity | Web + Auth + App server + `students` |
 | Professor Discovery | Workers + `professors`, `professor_profiles`, pgvector |
 | Campaigns | Web + App server + Workers + campaign tables |
-| Mailbox Integration | Workers + Graph |
+| Mailbox Integration | Workers + selected delivery integration |
 | Inbox | Web + Workers + thread tables |
 | Workers | Supabase Edge Functions + Queue |
 
