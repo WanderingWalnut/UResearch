@@ -23,6 +23,6 @@ Pause the Microsoft OAuth and Graph mailbox implementation. Retain generic Supab
 ## Consequences
 
 - Professor discovery work can continue on the retained `universities`, `students`, and `message_templates` primitives.
-- Automated mailbox sending and reply sync are no longer launch assumptions.
-- The next product decision must choose sign-in, outbound delivery, and reply tracking together enough to produce a coherent replacement PRD.
+- Microsoft-backed mailbox sending and reply sync are not launch assumptions.
+- [ADR-0006](./0006-use-google-gmail-send-only-for-launch-outreach.md) resolves the replacement path: Google sign-in, Gmail send-only delivery, and student-maintained reply state at launch.
 - The hosted Supabase project needs the rollback migration applied after explicit approval.

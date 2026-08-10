@@ -5,21 +5,21 @@ Major building blocks inside UResearch and how they communicate.
 ```mermaid
 %%{init: {"theme": "base", "themeVariables": {"background": "#f8fafc", "mainBkg": "#dbeafe", "primaryTextColor": "#0f172a", "lineColor": "#475569", "textColor": "#0f172a", "edgeLabelBackground": "#ffffff", "clusterBkg": "#ffffff", "clusterBorder": "#94a3b8", "fontFamily": "Inter, ui-sans-serif, system-ui, sans-serif"}} }%%
 flowchart LR
-  student["<b>Student</b><br/>UCalgary student"];
+  student["<b>Student</b><br/>Google-signed-in student"];
 
   subgraph uresearch["UResearch"]
     direction LR
 
     subgraph clients["User-facing"]
       direction TB
-      web["<b>Web App</b><br/>Next.js on Vercel<br/>Discovery, campaigns, templates, inbox UI"];
+      web["<b>Web App</b><br/>Next.js on Vercel<br/>Discovery, campaigns, templates, Outreach Board"];
       pixel["<b>Open Tracking Endpoint</b><br/>Vercel route or Edge Function<br/>Records opened Message Events"];
     end
 
     subgraph app["Application"]
       direction TB
       api["<b>App Server Actions / Route Handlers</b><br/>Next.js server<br/>Auth checks, domain logic, enqueue jobs"];
-      workers["<b>Background Workers</b><br/>Supabase Edge Functions<br/>Send, ingest, reply sync, dispatch campaigns"];
+      workers["<b>Background Workers</b><br/>Supabase Edge Functions<br/>Send, ingest, dispatch campaigns"];
     end
 
     subgraph platform["Supabase Platform"]
@@ -27,13 +27,13 @@ flowchart LR
       auth["<b>Auth</b><br/>Supabase Auth<br/>Student sessions"];
       db[("<b>Database</b><br/>Supabase Postgres + pgvector<br/>Students, profiles, campaigns, threads, message_events")];
       queue["<b>Job Queue</b><br/>Supabase Queues<br/>Async send and sync work"];
-      realtime["<b>Realtime</b><br/>Supabase Realtime<br/>Live campaign and inbox updates"];
+      realtime["<b>Realtime</b><br/>Supabase Realtime<br/>Live campaign and board updates"];
     end
   end
 
   subgraph external["External Systems"]
     direction TB
-    delivery["<b>Email Delivery Integration TBD</b><br/>Send and supported reply sync"];
+    delivery["<b>Gmail API</b><br/>Send-only connected mailbox"];
     ucalgary_sources["<b>UCalgary Sources</b><br/>Profile ingestion inputs"];
   end
 
@@ -45,7 +45,7 @@ flowchart LR
   api -->|"enqueue jobs"| queue;
   queue -->|"job batches"| workers;
   workers -->|"state + events"| db;
-  workers -->|"send / supported sync"| delivery;
+  workers -->|"send campaign messages"| delivery;
   workers -->|"fetch profiles"| ucalgary_sources;
   db -->|"row changes"| realtime;
   realtime -->|"live updates"| web;
@@ -69,8 +69,8 @@ flowchart LR
 | Identity | Web + Auth + App server + `students` |
 | Professor Discovery | Workers + `professors`, `professor_profiles`, pgvector |
 | Campaigns | Web + App server + Workers + campaign tables |
-| Mailbox Integration | Workers + selected delivery integration |
-| Inbox | Web + Workers + thread tables |
+| Delivery | Workers + Gmail API |
+| Outreach Board | Web + Workers + thread tables |
 | Workers | Supabase Edge Functions + Queue |
 
 See [`diagrams/c4-component.md`](./diagrams/c4-component.md) for App Server module boundaries and proposed `src/modules/` layout.

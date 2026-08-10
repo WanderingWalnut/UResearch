@@ -1,3 +1,5 @@
+import { AnimatedProductCard } from "./animated-product-card";
+
 const professorRows = [
   {
     initials: "SN",
@@ -86,7 +88,7 @@ export default function Home() {
         </section>
 
         <section className="bento-grid" id="discover" aria-label="Product preview">
-          <article className="product-card discovery-card">
+          <AnimatedProductCard className="product-card discovery-card" order={0}>
             <CardHeading icon={<SearchIcon />} title="Smart Professor Discovery" />
             <p className="card-description">
               Search the University of Calgary catalog by research interests,
@@ -121,9 +123,9 @@ export default function Home() {
                 </div>
               ))}
             </div>
-          </article>
+          </AnimatedProductCard>
 
-          <article className="product-card outreach-card">
+          <AnimatedProductCard className="product-card outreach-card" order={1}>
             <CardHeading icon={<SendIcon />} title="Personalized Outreach" />
             <p className="card-description">
               Build reusable Message Templates, personalize each Campaign
@@ -143,9 +145,13 @@ export default function Home() {
               </div>
               <span className="preview-action">Edit Message Template</span>
             </div>
-          </article>
+          </AnimatedProductCard>
 
-          <article className="product-card workflow-card" id="manage">
+          <AnimatedProductCard
+            className="product-card workflow-card"
+            id="manage"
+            order={2}
+          >
             <div className="workflow-intro">
               <div>
                 <CardHeading
@@ -184,7 +190,7 @@ export default function Home() {
                 />
               </BoardLane>
             </div>
-          </article>
+          </AnimatedProductCard>
         </section>
 
         <section className="capabilities-section" id="capabilities">

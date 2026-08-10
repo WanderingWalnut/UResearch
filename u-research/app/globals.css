@@ -9,6 +9,8 @@
   --blue: #0066ff;
   --green: #1c5e3a;
   --border: #e5e7eb;
+  --motion-duration-fast: 160ms;
+  --motion-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 @theme inline {
@@ -124,11 +126,19 @@ a {
   font-size: 16px;
   font-weight: 500;
   line-height: 24px;
-  transition: opacity 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
+  transition:
+    transform var(--motion-duration-fast) var(--motion-ease-out),
+    opacity var(--motion-duration-fast) ease,
+    background-color var(--motion-duration-fast) ease,
+    box-shadow var(--motion-duration-fast) ease;
 }
 
 .button:hover {
   opacity: 0.9;
+}
+
+.button:active {
+  transform: scale(0.97);
 }
 
 .button--primary {
@@ -792,9 +802,11 @@ a {
     scroll-behavior: auto;
   }
 
-  *,
-  *::before,
-  *::after {
-    transition-duration: 0.01ms !important;
+  .product-card {
+    transform: none !important;
+  }
+
+  .button:active {
+    transform: scale(0.99);
   }
 }

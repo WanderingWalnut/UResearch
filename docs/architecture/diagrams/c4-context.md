@@ -7,7 +7,7 @@ Shows UResearch in its environment: who uses it and which external systems it in
 flowchart LR
   subgraph users["People"]
     direction TB
-    student["<b>Student</b><br/>UCalgary student seeking research outreach"];
+    student["<b>Student</b><br/>Student seeking research outreach"];
     professor["<b>Professor</b><br/>Receives outreach in university mailbox"];
   end
 
@@ -15,15 +15,16 @@ flowchart LR
 
   subgraph external["External Systems"]
     direction TB
-    identity["<b>Identity Provider TBD</b><br/>Verified university-email sign-in"];
-    delivery["<b>Email Delivery Integration TBD</b><br/>Launch approach under review"];
+    identity["<b>Google Sign-In</b><br/>External identity for Student accounts"];
+    delivery["<b>Gmail API</b><br/>Send-only mailbox connection"];
     ucalgary_data["<b>UCalgary Profile Sources</b><br/>Professor directory pages/APIs for ingestion"];
   end
 
-  student -->|"discover / campaign / inbox"| uresearch;
+  student -->|"discover / campaign / board"| uresearch;
   student -->|"sign in"| identity;
-  uresearch -->|"send mail / sync supported replies"| delivery;
+  uresearch -->|"send approved campaign messages"| delivery;
   delivery -->|"deliver mail"| professor;
+  professor -->|"reply to connected Gmail address"| student;
   uresearch -->|"ingest profiles"| ucalgary_data;
   professor -->|"tracking pixel request"| uresearch;
 
@@ -40,14 +41,14 @@ flowchart LR
 
 | Flow | Direction | Notes |
 | --- | --- | --- |
-| Sign-in | Student → identity provider → UResearch | Domain validated against university allowlist |
+| Sign-in | Student → Google Sign-In → UResearch | Google identity creates the Student account |
 | Discovery | Student → UResearch | Reads pre-ingested profiles only |
-| Campaign send | UResearch → selected delivery integration → Professor mailbox | Launch delivery strategy under review |
-| Reply sync | Selected integration → UResearch | Launch reply-sync strategy under review |
+| Campaign send | UResearch → Gmail API → Professor mailbox | Sends approved Campaign Messages from the connected Gmail mailbox |
+| Reply path | Professor → Student mailbox | Replies go to the connected Gmail mailbox; UResearch does not read it at launch |
 | Open signal | Professor mail client → UResearch pixel | Recorded as `opened` **Message Event** |
 
 ## Out of scope at context level
 
 - Cross-university outreach
-- Full mailbox replacement
+- Gmail inbox reading at launch
 - Phase 2 agentic/iMessage interface (same domain objects later)
