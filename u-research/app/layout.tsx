@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Hanken_Grotesk, Inter } from "next/font/google";
+import { Hanken_Grotesk, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({
@@ -12,9 +12,15 @@ const hankenGrotesk = Hanken_Grotesk({
   subsets: ["latin"],
 });
 
+const jetBrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
+  subsets: ["latin"],
+});
+
 export const metadata: Metadata = {
-  title: "UResearch",
-  description: "Organize university research outreach.",
+  title: "UResearch — Find and manage research outreach",
+  description:
+    "Discover professors, personalize outreach, and keep research outreach organized in one workspace.",
 };
 
 export default function RootLayout({
@@ -25,7 +31,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${hankenGrotesk.variable} h-full antialiased`}
+      className={`${inter.variable} ${hankenGrotesk.variable} ${jetBrainsMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
