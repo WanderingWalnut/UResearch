@@ -2,7 +2,20 @@
 .header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-5); padding: 22px 5%; }
 .hero { max-width: 1000px; margin: auto; text-align: center; padding: 50px 20px 35px; }
 .hero h1 { font-size: var(--text-display); letter-spacing: -1.8px; line-height: 1.13; font-weight: 700; max-width: 850px; margin: 18px auto; }
-.hero h1 span { background: var(--highlight); border-radius: var(--radius-card); padding: 0 var(--space-2); box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+.rotatingPhrase { display: inline-grid; max-width: 100%; vertical-align: bottom; }
+.rotatingPhrase > span { grid-area: 1 / 1; justify-self: center; align-self: center; background: var(--highlight); border-radius: var(--radius-card); padding: 0 var(--space-2); opacity: 0; animation: rotatePhrase 12s var(--ease-out) infinite; }
+.rotatingPhrase > span:nth-child(1) { animation-delay: -0.3s; }
+.rotatingPhrase > span:nth-child(2) { background: var(--avatar-peach); animation-delay: 3.7s; }
+.rotatingPhrase > span:nth-child(3) { background: var(--avatar-purple); animation-delay: 7.7s; }
+.hero:has(input:checked) .rotatingPhrase > span, .hero:focus-within .rotatingPhrase > span { animation-play-state: paused; }
+@media (hover: hover) and (pointer: fine) {
+  .rotatingPhrase:hover > span { animation-play-state: paused; }
+}
+@keyframes rotatePhrase {
+  0% { opacity: 0; transform: translateY(12%); }
+  2.5%, 30.833% { opacity: 1; transform: translateY(0); }
+  33.333%, 100% { opacity: 0; transform: translateY(-12%); }
+}
 .hero p { max-width: 590px; margin: var(--space-5) auto; color: var(--muted); font-size: 17px; }
 .demo { max-width: var(--content-width); margin: 15px auto 0; border: 1px solid var(--border); border-radius: var(--radius-panel); background: var(--surface); overflow: hidden; box-shadow: var(--shadow-demo); scroll-margin-top: var(--space-5); }
 .demoHeader, .demoFooter { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; gap: var(--space-4); }
@@ -72,6 +85,9 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .canvas .cursor { transform: translate(var(--read-x, 0px), var(--read-y, 0px)); transition: none; }
+  .rotatingPhrase > span { animation: none; opacity: 0; transform: none; }
+  .rotatingPhrase > span:first-child { opacity: 1; }
+  .hero .motionSetting { display: none; }
   .exchange { opacity: 1; transition: none; }
   .typed { opacity: 1; }
   .typed, .sent { transition: opacity 100ms var(--ease-out); transition-delay: 0ms; }
