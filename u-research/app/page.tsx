@@ -12,13 +12,13 @@ export default function Home() {
       <main id="main">
         <section className={styles.hero}>
           <h1>
-            Find your <span className="sr-only">research direction.</span>
+            <span className="sr-only">Find your research direction.</span>
             <span className={styles.rotatingPhrase} aria-hidden="true">
-              <span>research direction.</span>
-              <span>research opportunity.</span>
-              <span>research community.</span>
+              <span>Find your <mark>research direction.</mark></span>
+              <span>Find your <mark>research opportunity.</mark></span>
+              <span>Find your <mark>research community.</mark></span>
             </span>
-            <br />Keep every conversation in view.
+            Keep every conversation in view.
           </h1>
           <label className={styles.motionSetting}>
             <input type="checkbox" />Pause headline animation

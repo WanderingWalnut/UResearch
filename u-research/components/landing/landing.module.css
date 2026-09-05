@@ -2,11 +2,14 @@
 .header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-5); padding: 22px 5%; }
 .hero { max-width: 1000px; margin: auto; text-align: center; padding: 50px 20px 35px; }
 .hero h1 { font-size: var(--text-display); letter-spacing: -1.8px; line-height: 1.13; font-weight: 700; max-width: 850px; margin: 18px auto; }
-.rotatingPhrase { display: inline-grid; max-width: 100%; vertical-align: bottom; }
-.rotatingPhrase > span { grid-area: 1 / 1; justify-self: start; align-self: center; background: var(--highlight); border-radius: var(--radius-card); padding: 0 var(--space-2); opacity: 0; animation: rotatePhrase 12s var(--ease-out) infinite; }
+.rotatingPhrase { display: grid; }
+.rotatingPhrase > span { grid-area: 1 / 1; align-self: center; opacity: 0; animation: rotatePhrase 12s var(--ease-out) infinite; }
+.rotatingPhrase mark { display: inline-block; max-width: 100%; color: inherit; background: var(--highlight); border-radius: var(--radius-card); padding: 0 var(--space-2); }
 .rotatingPhrase > span:nth-child(1) { animation-delay: -0.3s; }
-.rotatingPhrase > span:nth-child(2) { background: var(--avatar-peach); animation-delay: 3.7s; }
-.rotatingPhrase > span:nth-child(3) { background: var(--avatar-purple); animation-delay: 7.7s; }
+.rotatingPhrase > span:nth-child(2) { animation-delay: 3.7s; }
+.rotatingPhrase > span:nth-child(3) { animation-delay: 7.7s; }
+.rotatingPhrase > span:nth-child(2) mark { background: var(--avatar-peach); }
+.rotatingPhrase > span:nth-child(3) mark { background: var(--avatar-purple); }
 .hero:has(input:checked) .rotatingPhrase > span, .hero:focus-within .rotatingPhrase > span { animation-play-state: paused; }
 @media (hover: hover) and (pointer: fine) {
   .rotatingPhrase:hover > span { animation-play-state: paused; }
