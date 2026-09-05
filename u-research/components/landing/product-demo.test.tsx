@@ -7,6 +7,20 @@ afterEach(() => { cleanup(); vi.useRealTimers(); vi.unstubAllGlobals(); vi.resto
 it("loops automatically and respects pause, visibility, reduced motion, and unmount", () => {
   vi.useFakeTimers();
   let inView = true;
+  let resized = () => {};
+  let targetShift = 0;
+  const resizeDisconnect = vi.fn();
+  vi.stubGlobal("ResizeObserver", class {
+    constructor(callback: () => void) { resized = callback; }
+    observe() {}
+    disconnect = resizeDisconnect;
+  });
+  vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (this: HTMLElement) {
+    const target = this.dataset.cursorTarget;
+    return DOMRect.fromRect(target
+      ? { x: 200 + targetShift, y: 240, width: 100, height: 60 }
+      : { x: 100, y: 200, width: 600, height: 315 });
+  });
   let notifyVisibility: (entries: { isIntersecting: boolean }[]) => void;
   let hidden = false;
   const media = Object.assign(new EventTarget(), { matches: false });
@@ -20,9 +34,16 @@ it("loops automatically and respects pause, visibility, reduced motion, and unmo
   const { container, unmount } = render(<ProductDemo />);
   const step = () => container.querySelector("[data-step]")?.getAttribute("data-step");
   const tick = (ms = 2000) => act(() => { vi.advanceTimersByTime(ms); });
+  const frame = container.querySelector<HTMLElement>("[data-step]")!;
+  for (const target of ["card", "compose", "send"]) {
+    expect(frame.style.getPropertyValue(`--${target}-x`)).toBe("150px");
+    expect(frame.style.getPropertyValue(`--${target}-y`)).toBe("70px");
+  }
+  targetShift = 50; act(() => resized());
+  expect(frame.style.getPropertyValue("--send-x")).toBe("200px");
   expect(step()).toBe("0");
   tick(); expect(step()).toBe("1");
-  tick(8000); expect(step()).toBe("0");
+  tick(10000); expect(step()).toBe("0");
   fireEvent.focus(screen.getByRole("region", { name: "Product demonstration" }));
   tick(); expect(step()).toBe("0");
   fireEvent.blur(screen.getByRole("region", { name: "Product demonstration" }));
@@ -49,4 +70,5 @@ it("loops automatically and respects pause, visibility, reduced motion, and unmo
   tick(); expect(step()).toBe("3");
   expect(container.querySelector('[data-step] button, [data-step] a')).toBeNull();
   unmount(); expect(vi.getTimerCount()).toBe(0);
+  expect(resizeDisconnect).toHaveBeenCalledOnce();
 });
