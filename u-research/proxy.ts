@@ -5,8 +5,9 @@ export async function proxy(request: NextRequest) {
   return updateSession(request);
 }
 
+// Public marketing, design reference, and fonts do not use a Student session.
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!$|design-system/?$|fonts/|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

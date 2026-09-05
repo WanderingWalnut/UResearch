@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { Hanken_Grotesk, Inter, JetBrains_Mono } from "next/font/google";
-import { MotionProvider } from "./motion-provider";
+import { Hanken_Grotesk, Inter } from "next/font/google";
+import "@/styles/tokens.css";
 import "./globals.css";
 
 const inter = Inter({
@@ -10,11 +10,6 @@ const inter = Inter({
 
 const hankenGrotesk = Hanken_Grotesk({
   variable: "--font-hanken-grotesk",
-  subsets: ["latin"],
-});
-
-const jetBrainsMono = JetBrains_Mono({
-  variable: "--font-jetbrains-mono",
   subsets: ["latin"],
 });
 
@@ -32,11 +27,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${hankenGrotesk.variable} ${jetBrainsMono.variable} h-full antialiased`}
+      className={`${inter.variable} ${hankenGrotesk.variable}`}
     >
-      <body className="min-h-full flex flex-col">
-        <MotionProvider>{children}</MotionProvider>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

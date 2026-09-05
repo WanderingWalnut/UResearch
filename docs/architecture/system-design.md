@@ -1,5 +1,7 @@
 # UResearch System Design
 
+> Scope update, 2026-09-05: [ADR-0007](../adr/0007-support-gmail-outreach-conversations.md) supersedes send-only, deferred reply-sync, and manual-reply-only statements in this earlier blueprint. Full Gmail outreach conversations are now planned for launch. This blueprint has not yet been revised for the sync implementation; use ADR-0007 and the new Gmail-conversations PRD for that work.
+
 UResearch is a campaign manager for students seeking summer research positions. For launch, the system helps a Student at the University of Calgary discover UCalgary Professor Profiles, create Outreach Campaigns, send personalized emails, and track campaign progress.
 
 ## Strategy Reset

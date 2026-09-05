@@ -2,6 +2,8 @@
 
 UResearch helps students find academic research opportunities and manage professor outreach in one place.
 
+The current Gmail conversation scope is defined in [ADR-0007](docs/adr/0007-support-gmail-outreach-conversations.md). Full outreach conversations are planned for launch; this document describes product intent, not completed implementation.
+
 ## Language
 
 **Student**:
@@ -17,19 +19,27 @@ The **Student**'s chosen professor discovery catalog. At launch, Students self-s
 _Avoid_: Eligibility verification, tenant membership, email-domain proof
 
 **Google Account**:
-The external identity a **Student** uses to sign in to UResearch and grant Gmail sending access during launch onboarding. At launch, the same **Google Account** must be used for sign-in and the **Student Mailbox**.
+The external identity a **Student** uses to sign in to UResearch and grant Gmail reading and sending access during launch onboarding. At launch, the same **Google Account** must be used for sign-in and the **Student Mailbox**.
 _Avoid_: University email verification, Microsoft sign-in
 
 **Gmail Send Permission**:
-The Google OAuth permission that lets UResearch send approved **Campaign Messages** and **Follow-ups** from the **Student Mailbox** without reading mailbox contents. At launch, this permission is requested as part of the create/sign-up flow so onboarding feels seamless before the **Student** starts outreach.
-_Avoid_: Gmail read access, full inbox sync, Microsoft Graph consent
+The Google OAuth permission that lets UResearch send approved **Campaign Messages**, **Follow-ups**, and **Student Replies** from the **Student Mailbox**; reading outreach conversations uses the separate **Gmail Read Permission**. At launch, this permission is requested as part of the create/sign-up flow so onboarding feels seamless before the **Student** starts outreach.
+_Avoid_: Full mailbox control, Microsoft Graph consent
+
+**Gmail Read Permission**:
+The Google OAuth permission that lets UResearch retrieve messages from the Student Mailbox. The app displays linked outreach conversations; the provider scope itself is not limited to those threads.
+_Avoid_: Send-only access, per-Professor OAuth scope
+
+**Student Reply**:
+An ordinary email the Student writes in an Outreach Thread after receiving a reply. It becomes an outbound Thread Message and is sent through Gmail only after the Student explicitly sends it.
+_Avoid_: Automatic Follow-up, new Campaign Message
 
 **Limited Access**:
 The product state for a **Student** who has signed in with Google but does not currently have **Gmail Send Permission**. The **Student** may still discover **Professor Profiles**, save **Professors**, manage **Message Templates**, and draft **Outreach Campaigns**, but cannot approve, send, or follow up until Gmail is connected again.
 _Avoid_: Failed signup, blocked account, disabled user
 
 **Gmail Connection Prompt**:
-A clear action prompt shown when a **Student** needs to grant or restore **Gmail Send Permission**. It explains that UResearch needs send-only access to send student-approved outreach from the **Student Mailbox**, and that UResearch does not read Gmail at launch.
+A clear action prompt shown when a **Student** needs to grant or restore **Gmail Send Permission** or **Gmail Read Permission**. It explains that UResearch needs reading and sending access to show outreach conversations and send Student-approved messages from the **Student Mailbox**.
 _Avoid_: Generic permission error, hidden settings requirement, full inbox consent
 
 **Professor**:
@@ -105,7 +115,7 @@ A task cue on an **Outreach Board** card indicating that the **Student** may wan
 _Avoid_: Board lane, automated follow-up, required next step
 
 **Student Mailbox**:
-The Gmail mailbox for the same **Google Account** the **Student** uses to sign in. UResearch connects the **Student Mailbox** during launch onboarding with **Gmail Send Permission**, but does not read or sync the mailbox at launch.
+The Gmail mailbox for the same **Google Account** the **Student** uses to sign in. UResearch connects the **Student Mailbox** during launch onboarding with **Gmail Send Permission** and **Gmail Read Permission**. The app synchronizes linked outreach conversations, including incoming replies and messages sent in Gmail.
 _Avoid_: UResearch sender, shared inbox, Microsoft Graph mailbox
 
 **Opened Event**:
@@ -129,7 +139,7 @@ A student-maintained indication that a **Professor** replied in the **Student Ma
 _Avoid_: Reply sync, detected reply, automatic reply status
 
 **Bounce Mark**:
-A student-maintained indication that a sent outreach email later bounced in the **Student Mailbox**. At launch, UResearch does not detect bounces automatically because it does not read Gmail.
+A student-maintained indication that a sent outreach email later bounced in the **Student Mailbox**. Automated bounce classification is a separate implementation decision; reading access alone does not establish reliable bounce detection.
 _Avoid_: Automatic bounce sync, Gmail delivery failure, provider webhook
 
 **Contact Issue Report**:
@@ -140,7 +150,7 @@ _Avoid_: Automatic profile correction, global suppression, verified invalid emai
 
 - A **Student** signs in with a **Google Account**.
 - A **Student** has one launch **Student Mailbox**, and it must belong to the same **Google Account** used for sign-in.
-- Full outreach setup requires **Gmail Send Permission** for the **Student Mailbox**.
+- Full outreach setup requires **Gmail Send Permission** and **Gmail Read Permission** for the **Student Mailbox**. Missing read access pauses conversation sync; missing send access blocks sending. Discovery and drafting remain available.
 - A **Student** without current **Gmail Send Permission** is in **Limited Access** and sees a **Gmail Connection Prompt** before send-gated actions.
 - At launch, UResearch discovery is scoped to the **Student**'s **University Catalog Selection**, initially the University of Calgary catalog.
 - A **Professor** has one **Professor Profile** in a **University** directory.
@@ -189,11 +199,11 @@ _Avoid_: Automatic profile correction, global suppression, verified invalid emai
 - A **Follow-up Draft** is generated programmatically from templates and context; it is not AI-generated at launch.
 - A **Follow-up Draft** must be reviewed and approved by the **Student** before it becomes a sent **Follow-up**.
 - Unsent edits to a **Follow-up Draft** are ephemeral at launch; closing the flow discards them.
-- Approved **Follow-ups** use the same async Gmail send-only worker path as **Campaign Messages**.
+- Approved **Follow-ups** use the same async Gmail sending worker path as **Campaign Messages**.
 - **Follow-up Reminders** appear as card badges or board filters on `sent` and `opened` cards, not as **Outreach Board** lanes.
 - A default **Follow-up Reminder** is due seven days after the latest outbound message unless the **Outreach Thread** is `replied` or `closed`.
 - An **Outreach Thread** has a conversation status such as `open`, `replied`, or `closed`. Do not schedule **Follow-ups** after the thread is `replied`.
-- At launch, `replied` comes from a **Replied Mark** added by the **Student**, not automatic mailbox sync.
+- At launch, a detected incoming Professor reply for the current outreach cycle sets `replied`; a **Replied Mark** remains a manual correction. Old replies, Student replies, bounce notices, and automated responses must not mark a later cycle replied.
 - At launch, a later bounced email comes from a **Bounce Mark** added by the **Student**, not automatic mailbox sync.
 - A **Bounce Mark** closes the **Outreach Thread** with a bounce-oriented reason and creates a **Contact Issue Report** for review.
 
@@ -226,7 +236,7 @@ _Avoid_: Automatic profile correction, global suppression, verified invalid emai
 - "when is a campaign created and can it be edited after approval?" — resolved: campaign stays `draft` until explicit approval; after approval, recipient contact and rendered **Campaign Message** snapshots are immutable; unsent messages may be cancelled but not silently rewritten.
 - "scheduled campaign sends" — resolved: optional campaign-level `scheduled_for` at approval, default send-now; UResearch workers dispatch at the scheduled time rather than relying on a mailbox provider's deferred send for bulk campaigns.
 - "Audiences as separate entity" from Stitch designs — resolved: no separate Audience at launch; an **Outreach Campaign** name plus its selected **Professors** is the audience; **Saved Professors** is the reusable selection pool.
-- "exact UCalgary email domain rules" — superseded for launch: Google sign-in and Gmail send-only replace mandatory `@ucalgary.ca` verification; UCalgary remains the launch professor catalog.
+- "exact UCalgary email domain rules" — superseded for launch: Google sign-in and Gmail outreach access replace mandatory `@ucalgary.ca` verification; UCalgary remains the launch professor catalog.
 - "open tracking default" — resolved: enabled by default on **Outreach Campaigns** with per-campaign opt-out (`open_tracking_enabled`); UI shows **Opened** without extra disclaimer copy.
 - "separate opened_events vs message_events tables" — resolved: one unified append-only **Message Event** stream with an `opened` event type for pixel loads and lifecycle/sync event types for operational history.
 - "when is the tracking pixel added?" — resolved: when approval creates a queued **Campaign Message**, UResearch generates its opaque tracking token and stores exactly one pixel in its immutable HTML snapshot; UResearch previews use the plain-text snapshot and never load that pixel.
@@ -234,9 +244,9 @@ _Avoid_: Automatic profile correction, global suppression, verified invalid emai
 - "opened tracking is guaranteed when images load" — resolved for product language: UI treats **Opened** as the engagement signal without claiming confirmed read; image blocking can hide opens, while prefetch or proxy loads can create the single Opened Event without a human read.
 - "Student vs Supabase Auth user" — resolved: one Supabase Auth user maps one-to-one to one **Student** record after verified sign-in.
 - "launch sign-in method" — resolved: use Google sign-in, not Microsoft OAuth or email/password university verification.
-- "Student Mailbox integration" — resolved for launch: UResearch uses **Gmail Send Permission** to send approved outreach from the connected **Student Mailbox**, but does not read or sync mailbox contents.
-- "manual compose handoff vs managed sending" — resolved: use Gmail send-only for approved **Campaign Messages** and student-approved **Follow-ups** so Students do not have to draft each email themselves.
-- "full Gmail inbox in-app at launch" — resolved: defer mailbox reading because Gmail read/modify scopes are restricted and add production verification/security burden; keep manual **Replied Marks** and board tracking.
+- "Student Mailbox integration" — resolved under ADR-0007: Gmail Read Permission synchronizes linked outreach conversations; Gmail Send Permission sends approved Campaign Messages, Follow-ups, and Student Replies.
+- "manual compose handoff vs managed sending" — resolved under ADR-0007: Use Gmail sending for approved Campaign Messages, Follow-ups, and Student Replies from the in-app conversation composer.
+- "full Gmail inbox in-app at launch" — resolved under ADR-0007: Full outreach conversations are in scope under ADR-0007. An arbitrary Gmail inbox replacement remains outside scope. Restricted-scope verification is a release dependency.
 - "who may use UResearch when Google sign-in allows personal email?" — resolved: any Google-signed-in **Student** may self-select the University of Calgary **University Catalog Selection** at launch; stricter eligibility can be added later.
 - "when should Gmail send permission be requested?" — resolved: request it during the create/sign-up onboarding flow, not only at first send time.
 - "what happens if Gmail send permission is denied or revoked?" — resolved: keep the **Student** in **Limited Access**, pause queued sends, and require explicit resumption after Gmail is reconnected.
@@ -250,7 +260,7 @@ _Avoid_: Automatic profile correction, global suppression, verified invalid emai
 - "should unsent edited follow-up drafts be saved?" — resolved: no for launch; regenerate them on demand and persist only after approval/send.
 - "should follow-ups send synchronously?" — resolved: no; approved **Follow-ups** use the same async worker path as **Campaign Messages**.
 - "how are later bounce emails handled without Gmail reading?" — resolved: Gmail API acceptance is `sent`; later bounces are manual **Bounce Marks** that close the **Outreach Thread** and create **Contact Issue Reports**.
-- "how does a board card become replied without mailbox sync?" — resolved: allow an optional student-maintained **Replied Mark**; UResearch does not claim automatic reply detection at launch.
+- "how does a board card become replied without mailbox sync?" — resolved under ADR-0007: Detected Professor replies update the current cycle automatically; manual Replied Marks remain a correction path.
 - "should queued be a board lane?" — resolved: no; queued is operational send state. The student-facing board starts at `sent`.
 - "does a card need to become opened before replied?" — resolved: no; if no **Opened Event** is recorded, the card stays `sent` and the **Student** can still add a **Replied Mark**.
 - "should follow-up due be a board lane?" — resolved: no; use **Follow-up Reminders** as card badges and board filters layered on `sent` or `opened`.

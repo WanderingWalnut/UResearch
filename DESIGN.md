@@ -1,175 +1,95 @@
----
-name: Deep Intelligence
-colors:
-  surface: '#f9f9f7'
-  surface-dim: '#dadad8'
-  surface-bright: '#f9f9f7'
-  surface-container-lowest: '#ffffff'
-  surface-container-low: '#f4f4f2'
-  surface-container: '#eeeeec'
-  surface-container-high: '#e8e8e6'
-  surface-container-highest: '#e2e3e1'
-  on-surface: '#1a1c1b'
-  on-surface-variant: '#45474b'
-  inverse-surface: '#2f3130'
-  inverse-on-surface: '#f1f1ef'
-  outline: '#76777b'
-  outline-variant: '#c6c6cb'
-  surface-tint: '#5c5e64'
-  primary: '#000000'
-  on-primary: '#ffffff'
-  primary-container: '#191c21'
-  on-primary-container: '#81848a'
-  inverse-primary: '#c4c6cd'
-  secondary: '#0050cc'
-  on-secondary: '#ffffff'
-  secondary-container: '#0266ff'
-  on-secondary-container: '#f9f7ff'
-  tertiary: '#000000'
-  on-tertiary: '#ffffff'
-  tertiary-container: '#00210f'
-  on-tertiary-container: '#519168'
-  error: '#ba1a1a'
-  on-error: '#ffffff'
-  error-container: '#ffdad6'
-  on-error-container: '#93000a'
-  primary-fixed: '#e1e2e9'
-  primary-fixed-dim: '#c4c6cd'
-  on-primary-fixed: '#191c21'
-  on-primary-fixed-variant: '#44474d'
-  secondary-fixed: '#dae1ff'
-  secondary-fixed-dim: '#b3c5ff'
-  on-secondary-fixed: '#001849'
-  on-secondary-fixed-variant: '#003fa4'
-  tertiary-fixed: '#aef2c2'
-  tertiary-fixed-dim: '#93d5a8'
-  on-tertiary-fixed: '#00210f'
-  on-tertiary-fixed-variant: '#0a522f'
-  background: '#f9f9f7'
-  on-background: '#1a1c1b'
-  surface-variant: '#e2e3e1'
-  surface-main: '#FFFFFF'
-  surface-neutral: '#F9F9F7'
-  ink-primary: '#12151A'
-  ink-secondary: '#636C7A'
-  accent-blue: '#0066FF'
-  accent-green: '#1C5E3A'
-  border-subtle: '#E5E7EB'
-typography:
-  display-lg:
-    fontFamily: Hanken Grotesk
-    fontSize: 48px
-    fontWeight: '700'
-    lineHeight: 56px
-    letterSpacing: -0.02em
-  headline-lg:
-    fontFamily: Hanken Grotesk
-    fontSize: 32px
-    fontWeight: '600'
-    lineHeight: 40px
-    letterSpacing: -0.01em
-  headline-md:
-    fontFamily: Hanken Grotesk
-    fontSize: 24px
-    fontWeight: '600'
-    lineHeight: 32px
-  headline-sm:
-    fontFamily: Hanken Grotesk
-    fontSize: 18px
-    fontWeight: '600'
-    lineHeight: 24px
-  body-lg:
-    fontFamily: Inter
-    fontSize: 16px
-    fontWeight: '400'
-    lineHeight: 24px
-  body-md:
-    fontFamily: Inter
-    fontSize: 14px
-    fontWeight: '400'
-    lineHeight: 20px
-  body-sm:
-    fontFamily: Inter
-    fontSize: 12px
-    fontWeight: '400'
-    lineHeight: 16px
-  label-md:
-    fontFamily: JetBrains Mono
-    fontSize: 12px
-    fontWeight: '500'
-    lineHeight: 16px
-  label-sm:
-    fontFamily: JetBrains Mono
-    fontSize: 10px
-    fontWeight: '500'
-    lineHeight: 12px
-rounded:
-  sm: 0.125rem
-  DEFAULT: 0.25rem
-  md: 0.375rem
-  lg: 0.5rem
-  xl: 0.75rem
-  full: 9999px
-spacing:
-  base: 4px
-  stack-xs: 4px
-  stack-sm: 8px
-  stack-md: 16px
-  stack-lg: 24px
-  gutter: 16px
-  margin-mobile: 16px
-  margin-desktop: 32px
-  max-width: 1440px
----
+# UResearch design system
 
-## Brand & Style
-The design system is engineered for high-density data environments, prioritizing clarity, precision, and a sense of "quiet power." It draws inspiration from modern enterprise productivity tools, blending a **Corporate/Modern** foundation with **Minimalist** restraint. The brand personality is professional, authoritative, and data-centric, designed to make complex research feel manageable and organized.
+**Approved:** iteration 04, 5 September 2026. This file replaces the earlier “Deep Intelligence” exploration. The approved brand is the text **UResearch.** with a blue period. No separate logo, pictorial brand mark, or alternate name.
 
-The aesthetic utilizes expansive whitespace, crisp edges, and a focused color palette to reduce cognitive load. Subtle depth cues and high-quality typography ensure that even the most information-dense screens remain legible and approachable for power users.
+## Source of truth
 
-## Colors
-This design system uses a sophisticated "Deep Navy and Crisp White" palette. 
+1. [Shared CSS tokens](u-research/styles/tokens.css) define production color, spacing, type, shape, and timing values.
+2. [Reusable React components](u-research/components/ui/primitives.tsx) own repeated UI appearance and native semantics. Their [CSS Module](u-research/components/ui/primitives.module.css) uses those tokens.
+3. `/design-system` is the live component reference in the app. Check component changes here and on the landing page before accepting them.
+4. [Frozen iteration 04 screens](docs/design/iteration-04/index.html) preserve the approved visual direction across pages. These are illustrative HTML, not application implementation. The original review remains [online](https://uresearch-design-review.wanderingwalnut.chatgpt.site/?revision=4#landing).
 
-- **Primary:** A deep, near-black navy (`#12151A`) used for text, iconography, and primary brand elements to establish authority.
-- **Secondary:** A vibrant, digital blue (`#0066FF`) reserved for primary actions, progress indicators, and interactive highlights.
-- **Tertiary:** A refined forest green (`#1C5E3A`) used specifically for success states and data points representing growth or completion.
-- **Neutral:** A warm, off-white (`#F9F9F7`) serves as the background foundation, reducing the harshness of pure white while maintaining a clean appearance.
+Change tokens before adding page-specific overrides. Change a shared component before copying its markup. Do not copy the reference prototype's layered CSS into production. Root CONTEXT.md and docs/adr/ govern behavior; a mockup does not override them.
 
-Color application should be sparse, using the vibrant blue only to guide the user's eye toward critical interactions.
+## Visual principles
 
-## Typography
-The typography strategy balances modern aesthetics with technical precision. 
+- White is the main canvas. Use dark text and neutral separators. Small areas of color provide contrast: status labels, avatars, navigation selection, Template Variables, and relevant message highlights.
+- Keep the accepted Hanken Grotesk headings and Inter body text. Do not use a monospace font for ordinary labels.
+- Keep cards compact. Show the Professor, a short subject or research focus, and one useful activity detail. Open the full Outreach Thread for the conversation. Do not show unexplained match percentages.
+- No decorative accent borders: no colored top edge, side stripe, inset accent shadow, or accent outline on selected navigation. A soft selection fill and stronger text are sufficient. Keyboard focus rings remain required.
+- Use one Material Symbols Outlined icon family. Icons assist navigation or meaning; they are not decoration beside every button. Keep visible labels on primary actions.
 
-- **Headlines:** Uses **Hanken Grotesk** for its sharp, contemporary feel. Larger sizes use tighter letter-spacing to appear more cohesive.
-- **Body:** Uses **Inter** for its exceptional legibility in data-heavy environments. Standard body text is set to 14px to optimize information density without sacrificing readability.
-- **Labels:** Uses **JetBrains Mono** for metadata, IDs, and technical data points. The monospaced nature helps users quickly scan and compare alphanumeric research strings.
+## Color roles
 
-## Layout & Spacing
-The layout follows a **Fixed-Fluid Hybrid** model. Content is contained within a max-width of 1440px for desktop viewing to prevent line lengths from becoming unreadable.
+The tokens file is the exact value authority. Do not maintain a second theme configuration in JavaScript.
 
-- **Grid:** A 12-column system is used for dashboards, while a sidebar-main configuration is preferred for research workspaces.
-- **Rhythm:** An 8px base grid governs all spatial relationships.
-- **Density:** High-density views (tables/lists) use 8px internal padding, while marketing or landing pages use 16-24px padding to create a more premium, airy feel.
-- **Reflow:** On mobile, columns collapse to a single stack with 16px side margins. Sidebars transition to bottom-sheet navigation or hidden drawers.
+| Role | Token | Use |
+| --- | --- | --- |
+| White canvas / surface | `--canvas`, `--surface` | Main page and cards |
+| Subtle surface / lane | `--surface-subtle`, `--surface-lane` | Sidebar and board grouping |
+| Text / secondary text | `--ink`, `--muted` | Main content and supporting detail |
+| Neutral separator | `--border` | 1px structural divisions |
+| Blue action | `--action`, `--action-hover` | Primary action and hover |
+| Selection | `--selection`, `--selection-ink` | Active item; no accent border |
+| Sent / Opened / Replied | `--sent-*`, `--opened-*`, `--replied-*` | Small labels with text, never color alone |
+| Success / warning / error | `--success-*`, `--warning-*`, `--danger-*` | Meaningful feedback with a written explanation |
+| Template Variable | `--variable-*` | Readable resolved-value placeholder |
+| Search highlight | `--search-highlight*` | Relevant phrase in discovery results |
+| Avatar tones | `--avatar-*` | Distinguish people; no status meaning |
 
-## Elevation & Depth
-Depth is conveyed through **Tonal Layers** and **Low-Contrast Outlines** rather than heavy shadows.
+## Typography, density, and shape
 
-- **Surface Tiers:** The base background is neutral (`#F9F9F7`). Primary cards and containers use pure white (`#FFFFFF`) with a 1px subtle border (`#E5E7EB`).
-- **Shadows:** Only used to indicate interactivity or temporary overlay. Use a single "Ambient Shadow": `0 4px 12px rgba(0, 0, 0, 0.05)`.
-- **Floating Elements:** Modals and dropdowns receive a more pronounced shadow and a slightly thicker border to separate them from the underlying data grid.
+Headings and wordmark: Hanken Grotesk. Body and labels: Inter. Fonts are loaded once in the root layout. Main text is 14–16px with 1.5–1.55 line height. Captions are 12px. The landing headline is 52px on desktop and 36px on phones, with tight tracking and 1.13 line height. Small text inside the illustrative demo may be 9–12px; this is not the minimum size for real forms or email reading.
 
-## Shapes
-This design system utilizes a **Soft** shape language. 
+Use the 4px spacing scale: 4, 8, 12, 16, 20, 24, 32, 48, 64. Desktop landing content is at most 1120px. Phones use 16–20px page margins. Preserve compact row spacing; do not inflate cards to fill the viewport. At narrow widths, simplify the product illustration without hiding access to actual application content.
 
-- **Base Radius:** 4px (0.25rem) for inputs, buttons, and small components. This retains a technical, precise feel.
-- **Large Radius:** 8px (0.5rem) for cards and main content containers.
-- **Pill:** Reserved exclusively for status tags and chips to provide a clear visual contrast against rectangular data fields.
+Use 6px control radii, 8px cards, 12px enclosing demo panels, and 5px labels. Use subtle neutral borders. The landing demo has a soft shadow; normal data cards do not need raised shadows.
 
-## Components
-- **Buttons:** Primary buttons are Solid Navy (`#12151A`) with white text. Secondary buttons are White with a 1px border. Interactions use a subtle opacity shift (90%) on hover.
-- **Input Fields:** Use 14px text with 8px internal padding. Focus state is a 1px blue border with a faint 2px blue outer glow.
-- **Cards:** White background, subtle border, no shadow unless hovered. Used to group research modules or data summaries.
-- **Chips/Tags:** Small, pill-shaped elements. Use light-tinted backgrounds (e.g., 10% blue) with high-contrast text for categorization.
-- **Data Tables:** The core of the system. Use "Zebra striping" with `#F9F9F7` and horizontal borders only. Header rows use `label-md` typography.
-- **Navigation:** Vertical sidebar using `body-md` weight. Active states are indicated by a 2px blue vertical bar on the left edge.
+## Reusable component contract
+
+| Component | Contract |
+| --- | --- |
+| `Wordmark` | Text only, blue period. Wrap in a normal home link where navigation is needed. |
+| `Button` | Native button; defaults to `type="button"`. `primary`, `secondary`, or `ghost`. Uses native disabled state. |
+| `ActionLink` | Native anchor styled like a button. Use for navigation, never fake a disabled link. |
+| `Icon` | Fixed supported names from the self-hosted Material Symbols subset. Decorative and hidden from assistive technology; parent provides its label. |
+| `Avatar` | Small initials block, four approved tones. Adjacent visible Professor name supplies identity. |
+| `StatusBadge` | Sent, Opened, or Replied text with a soft semantic fill. |
+| `TemplateVariable` | Inline blue fill and readable text; no border or raw template syntax. |
+
+Use native input, textarea, select, and dialog semantics when those controls are implemented. Do not build a second component framework or a speculative form engine. Add shared components when actual pages require them; show new states on `/design-system`. Base UI remains the preferred candidate when a complex accessible control exceeds native capabilities; this landing page does not need it installed.
+
+## Page and flow rules
+
+- Sidebar groups: Search, Outreach, Account. Settings stays at the bottom. Use soft active-item fill and the shared icon family.
+- Do not repeat a large page title and subtitle when the navigation already supplies the location. Keep record titles and headings that explain real content. Maintain a meaningful accessible page heading.
+- Outreach Board cards open a full conversation view with a clear return path, not a popup.
+- Conversations prioritize the thread list, full inbound/outbound email exchange, and reply composer. No marketing heading above the inbox. Gmail functionality follows ADR-0007 and is not implemented by this landing page.
+- Campaign editor retains readable variables and preview. Review may use a dialog that returns to editing without losing work.
+- Landing copy is university-neutral; do not claim every University catalog is available. No unverified scores, university affiliation banner, or repeated feature-summary tiles.
+
+## Motion and accessibility
+
+The product demonstration starts automatically, cycles through board → selection → Professor reply → Student reply → sent confirmation, then repeats. Its tiles and simulated cursor are an illustration, not controls. Label the sample clearly. No visible playback button or “Illustrative demo” footer label. Pause on hover or keyboard focus; resume when neither is present. Make the demonstration focusable and explain pause behavior in its accessible description. A native Pause animation checkbox, revealed only on keyboard focus, lets keyboard and assistive-technology readers persist the pause after leaving the demo. Do not gate playback behind a Play button.
+
+Pause the timer when off-screen or when the document is hidden. Reduced motion shows a useful static conversation, with no cursor movement or autoplay. Do not announce every automatic scene to a screen reader; provide a stable summary. Always clean up timers and listeners.
+
+Use 160–180ms UI reveals and a 650ms simulated cursor move. Keep the rest of the page still. The React View Transitions audit found only same-page anchors, no route changes, Suspense loading, or list reordering. CSS is sufficient for this continuous illustration. Revisit React ViewTransition when real list→detail navigation is implemented; do not enable experimental route behavior solely for the demo.
+
+All controls require visible keyboard focus, meaningful accessible names, and native semantics. Focus rings are not decorative accent borders. Text must meet WCAG AA contrast. Do not rely only on color. Ensure no horizontal page overflow at 320px, 390px, 768px, and desktop widths. Keyboard interaction and reduced motion are part of acceptance, not optional polish.
+
+## Change and verification process
+
+1. Update tokens or the smallest shared component; keep page composition in its own CSS Module.
+2. Check `/design-system` and the affected page at phone and desktop widths. Compare with the frozen iteration 04 reference.
+3. Run the existing test, lint, and build commands. Keep one focused interaction test for autoplay, pause/resume, visibility, and reduced motion.
+4. Complete independent correctness/accessibility review and a separate Ponytail complexity review. Fix findings and re-review changed areas.
+
+A new palette, font, logo, or navigation pattern requires a new design review. Routine use of the existing system does not.
+
+## Sources and provenance
+
+- [Notion homepage](https://www.notion.com/), inspected 5 September 2026: white page, dark headings, localized colored labels/icons and automated product demonstrations. Inspiration only; no Notion assets were copied.
+- [Original Stitch project](https://stitch.withgoogle.com/projects/13233268902123685858): original blue actions, grouped navigation, and compact data presentation. Iteration 04 plus the wordmark decision is the approved set; older variants are historical.
+- [Material Symbols](https://fonts.google.com/icons): Outlined, 20px optical size, weight 400, unfilled. Local subset and Apache 2.0 license live in `u-research/public/fonts/`.
+- Local skills: Ponytail, Ponytail Review, Vercel React Best Practices, and React View Transitions. Use the audit findings above instead of adding unused animation infrastructure.

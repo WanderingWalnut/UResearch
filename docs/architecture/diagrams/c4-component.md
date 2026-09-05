@@ -1,5 +1,7 @@
 # C4 Component Diagram — App Server & Workers
 
+> Scope update, 2026-09-05: [ADR-0007](../../adr/0007-support-gmail-outreach-conversations.md) supersedes send-only, deferred reply-sync, and manual-reply-only statements in this earlier blueprint. Full Gmail outreach conversations are now planned for launch. This blueprint has not yet been revised for the sync implementation; use ADR-0007 and the new Gmail-conversations PRD for that work.
+
 Lightweight blueprint for module boundaries inside the **App Server** and **Background Workers** containers. Zoom level below [`c4-container.md`](./c4-container.md). Update when code layout diverges.
 
 ## App Server (Next.js server)

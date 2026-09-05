@@ -1,36 +1,34 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# UResearch web app
 
-## Getting Started
+Next.js 16 / React 19. The landing page implements approved design iteration 04.
 
-First, run the development server:
+## Design system
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
+Read [DESIGN.md](../DESIGN.md) before changing UI. Use [shared tokens](styles/tokens.css) and [React primitives](components/ui/primitives.tsx). View `/design-system` for component examples, states, and color roles. The [frozen design screens](../docs/design/README.md) preserve the approved reference for future workspace implementation.
+
+**Brand:** `UResearch.` text wordmark only. **Theme:** white canvas, dark text, blue actions, small areas of semantic color. No decorative accent borders.
+
+## Run and verify
+
+```sh
+pnpm install
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:3000` for the landing page and `http://localhost:3000/design-system` for the component reference.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```sh
+pnpm test
+pnpm lint
+pnpm build
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The public landing page, design reference, and fonts do not require a Supabase session. Other routes still use the existing session refresh; follow `.env.example` when working on app integration. Never commit `.env` files.
 
-## Learn More
+The demo uses fictional Professors and messages. It loops automatically while visible, pauses on hover or keyboard focus, and becomes static with reduced motion. Landing actions lead to the product demonstration until real onboarding routes are implemented. No email is read or sent by this page.
 
-To learn more about Next.js, take a look at the following resources:
+Inter and Hanken Grotesk are loaded through `next/font`. Material Symbols are self-hosted as a small subset under `public/fonts/`, with their license.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Deployment
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Vercel project `u-research` is connected to `WanderingWalnut/UResearch`. Its framework is Next.js and its repository root directory is `u-research`. Pushes to `main` build the live site; other branches receive previews. The checked-in `vercel.json` preserves framework detection. Keep preview credentials and local environment files out of source and deployment archives. The design-review Site is a separate historical artifact; Vercel serves the React implementation.

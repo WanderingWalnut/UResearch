@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Superseded in part by [ADR-0007](0007-support-gmail-outreach-conversations.md), 2026-09-05. The historical decision below is preserved. Gmail reading and in-app replies are now in launch scope; Google identity and same-account sending remain.
 
 UResearch will launch with Google sign-in and Gmail send-only OAuth so approved Outreach Campaigns and student-approved Follow-ups are sent from the Student's connected Gmail mailbox. Gmail send permission is requested during the create/sign-up onboarding flow so the launch experience feels seamless before the Student starts outreach. This replaces the UResearch-managed sender plan because the product needs emails to feel like they come from the Student while avoiding Microsoft Graph tenant-consent blockers and deferring Gmail inbox-reading risk.
 
