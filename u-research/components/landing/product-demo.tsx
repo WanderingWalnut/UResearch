@@ -21,10 +21,7 @@ export function ProductDemo() {
   const root = useRef<HTMLElement>(null);
   const canvas = useRef<HTMLDivElement>(null);
   const [step, setStep] = useState(0);
-  const [hovered, setHovered] = useState(false);
-  const [focused, setFocused] = useState(false);
   const [motionPaused, setMotionPaused] = useState(false);
-  const paused = hovered || focused || motionPaused;
 
   useEffect(() => {
     const frame = canvas.current!;
@@ -52,7 +49,7 @@ export function ProductDemo() {
       clearInterval(timer);
       if (reducedMotion.matches) {
         setStep(2);
-      } else if (inView && !document.hidden && !paused) {
+      } else if (inView && !document.hidden && !motionPaused) {
         timer = setInterval(() => setStep((current) => (current + 1) % captions.length), 2000);
       }
     };
@@ -69,11 +66,11 @@ export function ProductDemo() {
       reducedMotion.removeEventListener("change", sync);
       document.removeEventListener("visibilitychange", sync);
     };
-  }, [paused]);
+  }, [motionPaused]);
 
   return (
-    <section ref={root} id="product-tour" className={styles.demo} aria-label="Product demonstration" aria-describedby="demo-description" tabIndex={0} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}>
-      <p id="demo-description" className="sr-only">Illustrative demo: an Outreach Board leads to a full email exchange with a Professor. No email is sent. Focus this demonstration to pause it temporarily. Use the Pause animation checkbox to keep it paused.</p>
+    <section ref={root} id="product-tour" className={styles.demo} aria-label="Product demonstration" aria-describedby="demo-description">
+      <p id="demo-description" className="sr-only">Illustrative demo: an Outreach Board leads to a full email exchange with a Professor. No email is sent. Use the Pause animation checkbox to pause the demonstration.</p>
       <div className={styles.demoHeader}>
         <strong><Icon name="space_dashboard" />Your research workspace</strong>
         <span>Fall research outreach</span>

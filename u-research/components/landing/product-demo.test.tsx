@@ -44,14 +44,10 @@ it("loops automatically and respects pause, visibility, reduced motion, and unmo
   expect(step()).toBe("0");
   tick(); expect(step()).toBe("1");
   tick(10000); expect(step()).toBe("0");
-  fireEvent.focus(screen.getByRole("region", { name: "Product demonstration" }));
-  tick(); expect(step()).toBe("0");
-  fireEvent.blur(screen.getByRole("region", { name: "Product demonstration" }));
-  tick(); expect(step()).toBe("1");
   const demo = screen.getByRole("region", { name: "Product demonstration" });
   fireEvent.mouseEnter(demo); tick(); expect(step()).toBe("1");
-  fireEvent.focus(demo); fireEvent.mouseLeave(demo); tick(); expect(step()).toBe("1");
-  fireEvent.blur(demo);
+  fireEvent.focus(demo); tick(12000); expect(step()).toBe("1");
+  fireEvent.mouseLeave(demo); fireEvent.blur(demo);
   expect(screen.queryByRole("button")).toBeNull();
   const motion = screen.getByRole("checkbox", { name: "Pause animation" });
   fireEvent.click(motion); fireEvent.blur(demo); tick(); expect(step()).toBe("1");
