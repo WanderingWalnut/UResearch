@@ -35,7 +35,7 @@ it("loops automatically and respects pause, visibility, reduced motion, and unmo
   const step = () => container.querySelector("[data-step]")?.getAttribute("data-step");
   const tick = (ms = 2000) => act(() => { vi.advanceTimersByTime(ms); });
   const frame = container.querySelector<HTMLElement>("[data-step]")!;
-  for (const target of ["card", "compose", "send"]) {
+  for (const target of ["card", "read", "compose", "send"]) {
     expect(frame.style.getPropertyValue(`--${target}-x`)).toBe("150px");
     expect(frame.style.getPropertyValue(`--${target}-y`)).toBe("70px");
   }

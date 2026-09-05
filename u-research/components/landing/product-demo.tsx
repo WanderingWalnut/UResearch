@@ -100,11 +100,11 @@ export function ProductDemo() {
         <div className={styles.exchange}>
           <div className={styles.mailHeading}><b>Dr. Sarah Nguyen</b><span>Research introduction</span></div>
           <div className={styles.mail}><small>You · Monday</small><p>I’m interested in your research. Are you taking on students this summer?</p></div>
-          <div className={`${styles.mail} ${styles.received}`}><small>Dr. Nguyen · Today</small><p>Thanks for reaching out. Could you share your availability?</p></div>
+          <div data-cursor-target="read" className={`${styles.mail} ${styles.received}`}><small>Dr. Nguyen · Today</small><p>Thanks for reaching out. Could you share your availability?</p></div>
           <div className={styles.reply}><span data-cursor-target="compose" className={styles.typed}>I’m available from May through August.</span><span data-cursor-target="send" className={styles.send}>Send reply <Icon name="arrow_upward" /></span></div>
           <span className={styles.sent}><Icon name="check" />Reply sent</span>
         </div>
-        <div className={styles.cursor}><svg viewBox="0 0 24 28" width="18" height="21" aria-hidden="true"><path d="M1 1v22l6-6 4 9 4-2-4-9h9Z" fill="white" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" /></svg><span>You</span></div>
+        <div className={styles.cursor}><svg viewBox="0 0 24 28" width="18" height="21" aria-hidden="true"><path d="M1 1v22l6-6 4 9 4-2-4-9h9Z" fill="currentColor" stroke="white" strokeWidth="1.5" strokeLinejoin="round" /></svg><span>You</span></div>
       </div>
       <div className={styles.demoFooter}>
         <span aria-hidden="true">{captions[step]}</span>

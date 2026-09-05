@@ -26,3 +26,5 @@ The final refinement removes the visible playback button and “Illustrative dem
 ## Cursor alignment refinement
 
 The illustrative cursor now measures its card, composer, and Send reply targets after layout changes. Composing, sending, and confirmation have separate scenes. Cursor alignment was checked at 320, 390, 768, and 1280 pixels; Send reply had no measured positioning error or page overflow. The 320-pixel sent confirmation fits inside the frame. Tests cover target remeasurement and the full six-scene loop. Tests, lint, production build, and independent correctness/Ponytail review passed.
+
+The follow-up restores the solid blue cursor with a thin white edge for contrast over blue controls. It remains visible in all six scenes, travels through a measured reading target, and returns visibly to the board. Reply text fades in after cursor arrival; confirmation fades in over 160ms. Reduced motion keeps a static cursor. Browser checks confirmed opacity 1 and cursor bounds inside the phone canvas in all six scenes. Tests, lint, build, and independent review passed.
