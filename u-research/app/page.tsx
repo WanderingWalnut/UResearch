@@ -1,4 +1,5 @@
-import { ActionLink, Icon, Wordmark } from "@/components/ui/primitives";
+import { ActionLink, Wordmark } from "@/components/ui/primitives";
+import { Waitlist } from "@/components/landing/waitlist";
 import { FluidHeadline } from "@/components/landing/fluid-headline";
 import { ProductDemo } from "@/components/landing/product-demo";
 import styles from "@/components/landing/landing.module.css";
@@ -14,7 +15,7 @@ export default function Home() {
         <section className={styles.hero}>
           <FluidHeadline />
           <p>Find Professors, write thoughtful outreach, and continue the conversation—all in one workspace.</p>
-          <ActionLink href="#product-tour">See how it works <Icon name="arrow_forward" /></ActionLink>
+          <Waitlist />
         </section>
         <ProductDemo />
       </main>
