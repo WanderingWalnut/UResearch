@@ -1,7 +1,10 @@
-import type { NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/proxy";
 
 export async function proxy(request: NextRequest) {
+  if (process.env.WAITLIST_ONLY === "true") {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
   return updateSession(request);
 }
 

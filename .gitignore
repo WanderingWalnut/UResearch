@@ -70,4 +70,8 @@ tmp-*/
 .playwright-cli/
 output/
 
+# Marketing video production (Remotion, HyperFrames)
+launch-ad/
+videos/
+
 .gemini/

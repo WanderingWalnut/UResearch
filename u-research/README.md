@@ -25,7 +25,7 @@ pnpm build
 
 The public landing page, design reference, and fonts do not require a Supabase session. Other routes still use the existing session refresh; follow `.env.example` when working on app integration. Never commit `.env` files.
 
-The demo uses fictional Professors and messages. It loops automatically while visible, pauses on hover or keyboard focus, and becomes static with reduced motion. Landing actions lead to the product demonstration until real onboarding routes are implemented. No email is read or sent by this page.
+The demo uses fictional Professors and messages. It loops automatically while visible, pauses on hover or keyboard focus, and becomes static with reduced motion. The hero CTA joins the waitlist; the header action scrolls to the product demonstration. No email is read or sent by this page.
 
 Inter and Hanken Grotesk are loaded through `next/font`. Material Symbols are self-hosted as a small subset under `public/fonts/`, with their license.
 
