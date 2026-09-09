@@ -1,6 +1,6 @@
 "use server";
 
-import { createAdminClient } from "@/lib/supabase/admin";
+import { neon } from "@neondatabase/serverless";
 
 export type WaitlistState = { success: boolean; error?: string };
 
@@ -13,8 +13,9 @@ export async function joinWaitlist(_previousState: WaitlistState, formData: Form
   }
 
   try {
-    const { error } = await createAdminClient().from("waitlist_signups").insert({ email });
-    if (!error || error.code === "23505") return { success: true };
+    const sql = neon(process.env.DATABASE_URL!);
+    await sql`insert into public.waitlist_signups (email) values (${email}) on conflict (email) do nothing`;
+    return { success: true };
   } catch {
     // Keep configuration and service errors out of the public response.
   }
